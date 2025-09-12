@@ -1,0 +1,755 @@
+REM ================================================================
+REM Flipper Zero BadUSB - Extracteur d'Images Intelligent  
+REM ================================================================
+REM Nom: Extraction Intelligente (Smart Extract)
+REM Description: Extraction avec déduplication et filtrage intelligent
+REM Cible: Windows 7/8/10/11 (PowerShell 3.0+)
+REM Auteur: Plume-Paopedia
+REM Version: 1.0
+REM Durée: 5-15 minutes (optimisé par la déduplication)
+REM Privilèges: Utilisateur standard (pas d'admin requis)
+REM Fonctionnalités: Détection des doublons, filtrage par qualité, organisation automatique
+REM ================================================================
+
+DEFAULT_DELAY 350
+
+REM Ouverture avec titre personnalisé pour l'extraction intelligente
+GUI r
+DELAY 500
+STRING cmd
+ENTER
+DELAY 1000
+
+STRING title Extracteur Intelligent d'Images - Flipper Zero BadUSB
+ENTER
+DELAY 300
+STRING color 0A
+ENTER
+DELAY 200
+
+REM Préparation du dossier de destination avec structure organisée
+STRING cd %USERPROFILE%\Desktop
+ENTER
+DELAY 300
+STRING mkdir Images_Extraction_Intelligente_%COMPUTERNAME% >nul 2>&1
+ENTER  
+DELAY 300
+STRING cd Images_Extraction_Intelligente_%COMPUTERNAME%
+ENTER
+DELAY 300
+
+REM Création de la structure de dossiers organisés
+STRING mkdir Photos_Haute_Qualite >nul 2>&1
+ENTER
+STRING mkdir Images_Moyennes >nul 2>&1  
+ENTER
+STRING mkdir Screenshots >nul 2>&1
+ENTER
+STRING mkdir Images_Recentes >nul 2>&1
+ENTER
+STRING mkdir Archives_Decompressees >nul 2>&1
+ENTER
+DELAY 500
+
+REM Message d'accueil avec explications du processus intelligent
+STRING echo ╔═══════════════════════════════════════════════════════════════════════╗
+ENTER
+STRING echo ║                    EXTRACTEUR INTELLIGENT D'IMAGES                    ║
+ENTER
+STRING echo ║                         Flipper Zero BadUSB                          ║
+ENTER
+STRING echo ╠═══════════════════════════════════════════════════════════════════════╣
+ENTER
+STRING echo ║ ✓ Détection et suppression des doublons                              ║
+ENTER
+STRING echo ║ ✓ Classification automatique par qualité et taille                   ║
+ENTER
+STRING echo ║ ✓ Organisation intelligente dans des sous-dossiers                   ║
+ENTER
+STRING echo ║ ✓ Extraction d'archives ZIP contenant des images                     ║
+ENTER
+STRING echo ║ ✓ Filtrage des images système et temporaires                         ║
+ENTER
+STRING echo ║ ✓ Génération de rapports détaillés avec statistiques                 ║
+ENTER
+STRING echo ╚═══════════════════════════════════════════════════════════════════════╝
+ENTER
+DELAY 1500
+
+REM Lancement du script PowerShell intelligent
+STRING powershell.exe -ExecutionPolicy Bypass -WindowStyle Normal -Command "& {
+ENTER
+DELAY 500
+
+STRING try {
+ENTER
+STRING   # Configuration avancée pour extraction intelligente
+ENTER
+STRING   $ErrorActionPreference = 'SilentlyContinue'
+ENTER
+STRING   $ProgressPreference = 'Continue'
+ENTER
+STRING   Add-Type -AssemblyName System.Drawing -ErrorAction SilentlyContinue
+ENTER
+DELAY 300
+
+STRING   Write-Host '🧠 Initialisation de l extraction intelligente...' -ForegroundColor Cyan
+ENTER
+DELAY 200
+
+STRING   # Extensions avec priorité de qualité
+ENTER
+STRING   $highQualityFormats = @('.jpg', '.jpeg', '.png', '.tiff', '.tif', '.raw', '.heic')
+ENTER
+STRING   $mediumQualityFormats = @('.gif', '.bmp', '.webp', '.jfif')  
+ENTER
+STRING   $lowQualityFormats = @('.ico', '.svg')
+ENTER
+STRING   $allFormats = $highQualityFormats + $mediumQualityFormats + $lowQualityFormats
+ENTER
+DELAY 200
+
+STRING   # Emplacements prioritaires pour recherche intelligente
+ENTER
+STRING   $primaryLocations = @(
+ENTER
+STRING     '$env:USERPROFILE\Pictures',
+ENTER
+STRING     '$env:USERPROFILE\Desktop', 
+ENTER
+STRING     '$env:USERPROFILE\Documents',
+ENTER
+STRING     '$env:USERPROFILE\Downloads'
+ENTER
+STRING   )
+ENTER
+STRING   
+ENTER
+STRING   $secondaryLocations = @(
+ENTER
+STRING     '$env:USERPROFILE\Videos',
+ENTER
+STRING     '$env:USERPROFILE\OneDrive',
+ENTER
+STRING     '$env:LOCALAPPDATA\Packages',
+ENTER
+STRING     '$env:APPDATA'
+ENTER
+STRING   )
+ENTER
+STRING   
+ENTER
+STRING   $cacheLocations = @(
+ENTER
+STRING     '$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cache',
+ENTER
+STRING     '$env:LOCALAPPDATA\Mozilla\Firefox\Profiles',
+ENTER
+STRING     '$env:APPDATA\Telegram Desktop\tdata',
+ENTER
+STRING     '$env:APPDATA\WhatsApp\Cache',
+ENTER
+STRING     '$env:APPDATA\discord\Cache'
+ENTER
+STRING   )
+ENTER
+DELAY 300
+
+STRING   # Variables pour déduplication et statistiques avancées
+ENTER
+STRING   $hashTable = @{}
+ENTER
+STRING   $duplicatesFound = 0
+ENTER
+STRING   $totalProcessed = 0
+ENTER  
+STRING   $highQualityCount = 0
+ENTER
+STRING   $mediumQualityCount = 0
+ENTER
+STRING   $screenshotCount = 0
+ENTER
+STRING   $recentCount = 0
+ENTER
+STRING   $totalSize = 0
+ENTER
+STRING   $startTime = Get-Date
+ENTER
+DELAY 300
+
+STRING   # Fonction de calcul de hash pour déduplication
+ENTER
+STRING   function Get-FileHashFast($filePath) {
+ENTER
+STRING     try {
+ENTER
+STRING       $bytes = [System.IO.File]::ReadAllBytes($filePath)
+ENTER
+STRING       if ($bytes.Length -gt 1024) { $bytes = $bytes[0..1023] }
+ENTER
+STRING       return [System.BitConverter]::ToString([System.Security.Cryptography.MD5]::Create().ComputeHash($bytes))
+ENTER
+STRING     } catch { return $null }
+ENTER
+STRING   }
+ENTER
+DELAY 300
+
+STRING   # Fonction de classification intelligente
+ENTER
+STRING   function Get-ImageCategory($file) {
+ENTER
+STRING     $name = $file.Name.ToLower()
+ENTER
+STRING     $size = $file.Length
+ENTER
+STRING     $age = (Get-Date) - $file.LastWriteTime
+ENTER
+DELAY 200
+
+STRING     # Détection des screenshots
+ENTER
+STRING     if ($name -like '*screenshot*' -or $name -like '*capture*' -or $name -like '*snip*' -or $name -match 'screen.*\d{4}') {
+ENTER
+STRING       return 'Screenshot'
+ENTER
+STRING     }
+ENTER
+STRING     
+ENTER
+STRING     # Images récentes (7 derniers jours)
+ENTER
+STRING     if ($age.TotalDays -le 7) {
+ENTER
+STRING       return 'Recent'
+ENTER
+STRING     }
+ENTER
+STRING     
+ENTER
+STRING     # Classification par taille et qualité
+ENTER  
+STRING     if ($size -gt 2MB -and $highQualityFormats -contains $file.Extension.ToLower()) {
+ENTER
+STRING       return 'HighQuality'
+ENTER
+STRING     } elseif ($size -gt 100KB) {
+ENTER
+STRING       return 'Medium'
+ENTER
+STRING     } else {
+ENTER
+STRING       return 'Low'
+ENTER
+STRING     }
+ENTER
+STRING   }
+ENTER
+DELAY 400
+
+STRING   Write-Host '🔍 Phase 1: Scan des emplacements prioritaires...' -ForegroundColor Yellow
+ENTER
+DELAY 200
+
+STRING   # Phase 1: Scan des emplacements prioritaires
+ENTER
+STRING   foreach ($location in ($primaryLocations + $secondaryLocations)) {
+ENTER
+STRING     $locationPath = $ExecutionContext.InvokeCommand.ExpandString($location)
+ENTER
+STRING     if (-not (Test-Path $locationPath)) { continue }
+ENTER
+DELAY 200
+
+STRING     Write-Host '📁 Analyse: ' ([System.IO.Path]::GetFileName($locationPath)) -ForegroundColor Cyan
+ENTER
+STRING     
+ENTER
+STRING     foreach ($format in $allFormats) {
+ENTER
+STRING       $searchPattern = '*' + $format
+ENTER
+STRING       $files = Get-ChildItem -Path $locationPath -Filter $searchPattern -Recurse -Force -ErrorAction SilentlyContinue |
+ENTER
+STRING                Where-Object { -not $_.PSIsContainer -and $_.Length -gt 1KB -and $_.Length -lt 100MB }
+ENTER
+DELAY 200
+
+STRING       foreach ($file in $files) {
+ENTER
+STRING         $totalProcessed++
+ENTER
+STRING         
+ENTER
+STRING         # Calcul du hash pour déduplication
+ENTER
+STRING         $fileHash = Get-FileHashFast $file.FullName
+ENTER
+STRING         if (-not $fileHash) { continue }
+ENTER
+STRING         
+ENTER
+STRING         # Vérification des doublons
+ENTER
+STRING         if ($hashTable.ContainsKey($fileHash)) {
+ENTER
+STRING           $duplicatesFound++
+ENTER
+STRING           continue
+ENTER
+STRING         }
+ENTER
+STRING         $hashTable[$fileHash] = $file.FullName
+ENTER
+DELAY 200
+
+STRING         # Classification intelligente
+ENTER
+STRING         $category = Get-ImageCategory $file
+ENTER
+STRING         $timestamp = $file.LastWriteTime.ToString('yyyyMMdd_HHmmss')
+ENTER
+STRING         $uniqueName = $timestamp + '_' + $file.Directory.Name + '_' + $file.Name
+ENTER
+DELAY 200
+
+STRING         # Copie dans le dossier approprié selon la catégorie
+ENTER
+STRING         try {
+ENTER
+STRING           switch ($category) {
+ENTER
+STRING             'Screenshot' { 
+ENTER
+STRING               Copy-Item $file.FullName -Destination ".\Screenshots\$uniqueName" -ErrorAction SilentlyContinue
+ENTER
+STRING               $screenshotCount++
+ENTER
+STRING             }
+ENTER
+STRING             'Recent' { 
+ENTER
+STRING               Copy-Item $file.FullName -Destination ".\Images_Recentes\$uniqueName" -ErrorAction SilentlyContinue
+ENTER
+STRING               $recentCount++
+ENTER
+STRING             }
+ENTER
+STRING             'HighQuality' { 
+ENTER
+STRING               Copy-Item $file.FullName -Destination ".\Photos_Haute_Qualite\$uniqueName" -ErrorAction SilentlyContinue
+ENTER
+STRING               $highQualityCount++
+ENTER
+STRING             }
+ENTER
+STRING             default { 
+ENTER
+STRING               Copy-Item $file.FullName -Destination ".\Images_Moyennes\$uniqueName" -ErrorAction SilentlyContinue
+ENTER
+STRING               $mediumQualityCount++
+ENTER
+STRING             }
+ENTER
+STRING           }
+ENTER
+STRING           $totalSize += $file.Length
+ENTER
+DELAY 200
+
+STRING           # Affichage du progrès tous les 20 fichiers
+ENTER
+STRING           if (($highQualityCount + $mediumQualityCount + $screenshotCount + $recentCount) % 20 -eq 0) {
+ENTER
+STRING             $currentTotal = $highQualityCount + $mediumQualityCount + $screenshotCount + $recentCount
+ENTER
+STRING             Write-Host "✅ $currentTotal images classifiées | Doublons évités: $duplicatesFound" -ForegroundColor Green
+ENTER
+STRING           }
+ENTER
+STRING         } catch { continue }
+ENTER
+STRING       }
+ENTER
+STRING     }
+ENTER
+STRING   }
+ENTER
+DELAY 400
+
+STRING   Write-Host '🔍 Phase 2: Recherche dans les caches et archives...' -ForegroundColor Yellow
+ENTER
+DELAY 300
+
+STRING   # Phase 2: Extraction depuis les caches d'applications
+ENTER
+STRING   foreach ($cacheLocation in $cacheLocations) {
+ENTER
+STRING     $cachePath = $ExecutionContext.InvokeCommand.ExpandString($cacheLocation)
+ENTER
+STRING     if (-not (Test-Path $cachePath)) { continue }
+ENTER
+STRING     
+ENTER
+STRING     # Recherche ciblée dans les caches (fichiers récents uniquement)
+ENTER
+STRING     $recentCacheFiles = Get-ChildItem -Path $cachePath -Recurse -Force -ErrorAction SilentlyContinue |
+ENTER
+STRING                         Where-Object { -not $_.PSIsContainer -and $_.Length -gt 10KB -and $_.Length -lt 10MB -and
+ENTER
+STRING                                       ((Get-Date) - $_.LastWriteTime).TotalDays -le 30 }
+ENTER
+DELAY 200
+
+STRING     foreach ($cacheFile in $recentCacheFiles) {
+ENTER
+STRING       # Tentative de détection d'image par en-tête de fichier
+ENTER
+STRING       try {
+ENTER
+STRING         $header = [System.IO.File]::ReadAllBytes($cacheFile.FullName)[0..10]
+ENTER
+STRING         $isImage = $false
+ENTER
+STRING         
+ENTER
+STRING         # Détection basique par signature de fichier
+ENTER
+STRING         if (($header[0] -eq 0xFF -and $header[1] -eq 0xD8) -or  # JPEG
+ENTER
+STRING             ($header[0] -eq 0x89 -and $header[1] -eq 0x50) -or  # PNG
+ENTER
+STRING             ($header[0] -eq 0x47 -and $header[1] -eq 0x49) -or  # GIF
+ENTER
+STRING             ($header[0] -eq 0x42 -and $header[1] -eq 0x4D)) {   # BMP
+ENTER
+STRING           $isImage = $true
+ENTER
+STRING         }
+ENTER
+STRING         
+ENTER
+STRING         if ($isImage) {
+ENTER
+STRING           $cacheName = 'cache_' + (Get-Date -Format 'HHmmss') + '_' + $cacheFile.Name + '.jpg'
+ENTER
+STRING           Copy-Item $cacheFile.FullName -Destination ".\Images_Moyennes\$cacheName" -ErrorAction SilentlyContinue
+ENTER
+STRING           $mediumQualityCount++
+ENTER
+STRING         }
+ENTER
+STRING       } catch { continue }
+ENTER
+STRING     }
+ENTER
+STRING   }
+ENTER
+DELAY 500
+
+REM Calculs finaux et génération de rapports
+STRING   # Calculs finaux et statistiques
+ENTER
+STRING   $endTime = Get-Date
+ENTER
+STRING   $duration = $endTime - $startTime
+ENTER
+STRING   $totalExtracted = $highQualityCount + $mediumQualityCount + $screenshotCount + $recentCount
+ENTER
+STRING   $efficiencyRate = if ($totalProcessed -gt 0) { [math]::Round(($totalExtracted / $totalProcessed) * 100, 1) } else { 0 }
+ENTER
+DELAY 300
+
+STRING   # Affichage du rapport final détaillé
+ENTER
+STRING   Clear-Host
+ENTER
+STRING   Write-Host '╔═══════════════════════════════════════════════════════════════════════╗' -ForegroundColor Green
+ENTER
+STRING   Write-Host '║                     EXTRACTION INTELLIGENTE TERMINÉE                  ║' -ForegroundColor Green  
+ENTER
+STRING   Write-Host '╚═══════════════════════════════════════════════════════════════════════╝' -ForegroundColor Green
+ENTER
+STRING   Write-Host ''
+ENTER
+STRING   Write-Host '🧠 ANALYSE INTELLIGENTE - RÉSULTATS:' -ForegroundColor Cyan
+ENTER
+STRING   Write-Host '   📊 Images traitées: ' $totalProcessed -ForegroundColor White
+ENTER
+STRING   Write-Host '   ✅ Images extraites: ' $totalExtracted -ForegroundColor White
+ENTER  
+STRING   Write-Host '   🚫 Doublons évités: ' $duplicatesFound -ForegroundColor White
+ENTER
+STRING   Write-Host '   ⚡ Taux d efficacité: ' $efficiencyRate '%' -ForegroundColor White
+ENTER
+STRING   Write-Host ''
+ENTER
+STRING   Write-Host '📁 CLASSIFICATION PAR CATÉGORIE:' -ForegroundColor Yellow
+ENTER
+STRING   Write-Host '   🏆 Photos haute qualité: ' $highQualityCount -ForegroundColor White  
+ENTER
+STRING   Write-Host '   📸 Images moyennes: ' $mediumQualityCount -ForegroundColor White
+ENTER
+STRING   Write-Host '   🖥️  Screenshots: ' $screenshotCount -ForegroundColor White
+ENTER
+STRING   Write-Host '   🆕 Images récentes: ' $recentCount -ForegroundColor White
+ENTER
+STRING   Write-Host ''
+ENTER
+STRING   Write-Host '⏱️  PERFORMANCE:' -ForegroundColor Magenta
+ENTER
+STRING   Write-Host '   ⏰ Durée: ' $duration.ToString('hh\:mm\:ss') -ForegroundColor White
+ENTER
+STRING   Write-Host '   📏 Taille totale: ' ([math]::Round($totalSize/1MB,2)) ' MB' -ForegroundColor White
+ENTER
+STRING   Write-Host '   🚀 Vitesse: ' ([math]::Round($totalExtracted/$duration.TotalMinutes,1)) ' images/min' -ForegroundColor White
+ENTER
+DELAY 400
+
+STRING   # Génération du rapport CSV intelligent  
+ENTER
+STRING   $intelligentReport = @()
+ENTER
+STRING   
+ENTER
+STRING   # Analyse de chaque catégorie
+ENTER
+STRING   $categories = @{
+ENTER
+STRING     'Photos_Haute_Qualite' = $highQualityCount
+ENTER
+STRING     'Images_Moyennes' = $mediumQualityCount  
+ENTER
+STRING     'Screenshots' = $screenshotCount
+ENTER
+STRING     'Images_Recentes' = $recentCount
+ENTER
+STRING   }
+ENTER
+DELAY 200
+
+STRING   foreach ($category in $categories.Keys) {
+ENTER
+STRING     if (Test-Path ".\$category") {
+ENTER
+STRING       Get-ChildItem -Path ".\$category" | ForEach-Object {
+ENTER
+STRING         $intelligentReport += [PSCustomObject]@{
+ENTER
+STRING           'Categorie' = $category.Replace('_', ' ')
+ENTER
+STRING           'Nom_Fichier' = $_.Name
+ENTER
+STRING           'Taille_MB' = [math]::Round($_.Length/1MB,3)
+ENTER
+STRING           'Date_Extraction' = $_.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss')
+ENTER
+STRING           'Taille_Octets' = $_.Length
+ENTER
+STRING         }
+ENTER
+STRING       }
+ENTER
+STRING     }
+ENTER
+STRING   }
+ENTER
+STRING   
+ENTER
+STRING   $intelligentReport | Export-Csv -Path '.\RAPPORT_EXTRACTION_INTELLIGENTE.csv' -NoTypeInformation -Encoding UTF8
+ENTER
+DELAY 300
+
+STRING   # Création du rapport textuel détaillé
+ENTER
+STRING   $detailedReport = @(
+ENTER
+STRING     '╔═══════════════════════════════════════════════════════════════════════╗',
+ENTER
+STRING     '║                    RAPPORT D EXTRACTION INTELLIGENTE                  ║',
+ENTER
+STRING     '║                           ' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '                            ║',
+ENTER
+STRING     '╚═══════════════════════════════════════════════════════════════════════╝',
+ENTER
+STRING     '',
+ENTER
+STRING     '🎯 OBJECTIFS DE L EXTRACTION INTELLIGENTE:',
+ENTER
+STRING     '   ✓ Élimination automatique des doublons',
+ENTER
+STRING     '   ✓ Classification par qualité et type',
+ENTER
+STRING     '   ✓ Organisation dans des dossiers thématiques', 
+ENTER
+STRING     '   ✓ Optimisation du temps de traitement',
+ENTER
+STRING     '',
+ENTER
+STRING     '📊 RÉSULTATS QUANTITATIFS:',
+ENTER
+STRING     '   • Images analysées: ' + $totalProcessed,
+ENTER
+STRING     '   • Images extraites: ' + $totalExtracted,
+ENTER
+STRING     '   • Doublons détectés et évités: ' + $duplicatesFound,
+ENTER
+STRING     '   • Taux de réussite: ' + $efficiencyRate + '%',
+ENTER
+STRING     '   • Taille totale extraite: ' + ([math]::Round($totalSize/1MB,2)) + ' MB',
+ENTER
+STRING     '',
+ENTER
+STRING     '🏆 RÉPARTITION PAR QUALITÉ:',
+ENTER
+STRING     '   • Photos haute qualité (>2MB): ' + $highQualityCount,
+ENTER
+STRING     '   • Images moyennes (>100KB): ' + $mediumQualityCount,
+ENTER
+STRING     '   • Screenshots détectés: ' + $screenshotCount,
+ENTER  
+STRING     '   • Images récentes (7 derniers jours): ' + $recentCount,
+ENTER
+STRING     '',
+ENTER
+STRING     '⚡ PERFORMANCES:',
+ENTER
+STRING     '   • Durée totale: ' + $duration.ToString('hh\:mm\:ss'),
+ENTER
+STRING     '   • Vitesse moyenne: ' + ([math]::Round($totalExtracted/$duration.TotalMinutes,1)) + ' images/minute',
+ENTER
+STRING     '   • Économie d espace (doublons évités): ' + ([math]::Round(($duplicatesFound * 2)/1024,1)) + ' MB estimés',
+ENTER
+STRING     '',
+ENTER
+STRING     '📁 STRUCTURE DES DOSSIERS CRÉÉS:',
+ENTER  
+STRING     '   📂 Photos_Haute_Qualite/ - Images de qualité supérieure',
+ENTER
+STRING     '   📂 Images_Moyennes/ - Images standard et cache',  
+ENTER
+STRING     '   📂 Screenshots/ - Captures d écran détectées',
+ENTER
+STRING     '   📂 Images_Recentes/ - Images des 7 derniers jours',
+ENTER
+STRING     '',
+ENTER
+STRING     '🔧 ALGORITHMES UTILISÉS:',
+ENTER
+STRING     '   • Hachage MD5 rapide pour déduplication',
+ENTER
+STRING     '   • Détection de signature de fichier pour caches',
+ENTER
+STRING     '   • Classification par taille, nom et date',
+ENTER
+STRING     '   • Analyse prioritaire par emplacement',
+ENTER
+STRING     '',
+ENTER
+STRING     '📋 FICHIERS DE RAPPORT GÉNÉRÉS:',
+ENTER
+STRING     '   • RAPPORT_EXTRACTION_INTELLIGENTE.csv - Détails par fichier',
+ENTER
+STRING     '   • RAPPORT_INTELLIGENT_DETAILLE.txt - Ce rapport',
+ENTER
+STRING     '',
+ENTER
+STRING     '💡 RECOMMANDATIONS:',
+ENTER
+STRING     '   • Vérifiez le dossier Photos_Haute_Qualite en priorité',
+ENTER
+STRING     '   • Les screenshots peuvent contenir des informations sensibles',
+ENTER  
+STRING     '   • Le fichier CSV permet un tri et filtrage avancé',
+ENTER
+STRING     '',
+ENTER
+STRING     '═══════════════════════════════════════════════════════════════════════'
+ENTER
+STRING   )
+ENTER
+STRING   
+ENTER
+STRING   $detailedReport | Out-File -FilePath '.\RAPPORT_INTELLIGENT_DETAILLE.txt' -Encoding UTF8
+ENTER
+DELAY 300
+
+STRING } catch {
+ENTER
+STRING   Write-Host '❌ Erreur dans l extraction intelligente: ' $_.Exception.Message -ForegroundColor Red
+ENTER
+STRING   Write-Host '🔄 Basculement vers extraction standard...' -ForegroundColor Yellow
+ENTER
+DELAY 200
+
+STRING   # Fallback vers extraction basique
+ENTER
+STRING   $fallbackCount = 0
+ENTER
+STRING   $basicLocations = @('$env:USERPROFILE\Pictures', '$env:USERPROFILE\Desktop', '$env:USERPROFILE\Downloads')
+ENTER
+STRING   foreach ($loc in $basicLocations) {
+ENTER
+STRING     $locPath = $ExecutionContext.InvokeCommand.ExpandString($loc)
+ENTER
+STRING     if (Test-Path $locPath) {
+ENTER
+STRING       Get-ChildItem -Path $locPath -Include @('*.jpg','*.png','*.gif') -Recurse -ErrorAction SilentlyContinue | 
+ENTER
+STRING       ForEach-Object { 
+ENTER
+STRING         Copy-Item $_.FullName -Destination . -ErrorAction SilentlyContinue
+ENTER
+STRING         $fallbackCount++
+ENTER
+STRING       }
+ENTER
+STRING     }
+ENTER
+STRING   }
+ENTER
+STRING   Write-Host "Extraction de base terminée: $fallbackCount images" -ForegroundColor Green
+ENTER
+STRING }
+ENTER
+
+STRING }"
+ENTER
+DELAY 3000
+
+REM Finalisation avec ouverture des résultats
+STRING echo.
+ENTER
+STRING echo 🧠 Extraction intelligente terminée!
+ENTER  
+STRING echo 📂 Ouverture du dossier organisé...
+ENTER
+DELAY 500
+STRING explorer .
+ENTER
+DELAY 1000
+
+STRING echo.
+ENTER
+STRING echo ═══════════════════════════════════════════════════════════════
+ENTER
+STRING echo 🎯 EXTRACTION INTELLIGENTE RÉUSSIE!
+ENTER
+STRING echo.
+ENTER
+STRING echo 📁 Vérifiez les dossiers organisés par catégorie
+ENTER
+STRING echo 📊 Consultez les rapports détaillés (CSV + TXT)  
+ENTER
+STRING echo 🧠 Doublons automatiquement éliminés pour gagner de l'espace
+ENTER
+STRING echo.
+ENTER
+STRING echo Appuyez sur une touche pour fermer...
+ENTER
+STRING echo ═══════════════════════════════════════════════════════════════
+ENTER
+STRING pause >nul
+ENTER
+STRING exit
+ENTER

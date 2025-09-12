@@ -1,0 +1,35 @@
+# Logs et fichiers temporaires
+*.tmp
+*.log
+temp_*
+extraction_temp/
+
+# Dossiers d'images extraites (ne pas versionner les données extraites)
+extracted_images/
+output/
+images/
+cache/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Fichiers de configuration locaux
+config.local.*
+settings.local.*
+
+# Dossiers de développement
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archives temporaires
+*.zip.tmp
+*.7z.tmp
+extraction_*.zip
+
+# Logs d'extraction
+extraction_log_*.txt
+report_*.csv
