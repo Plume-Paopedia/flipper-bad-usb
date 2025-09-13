@@ -43,6 +43,10 @@ Ce projet propose une **collection complète et professionnelle** de payloads Ba
 - **🎨 Interface Utilisateur** : Retours visuels et rapports détaillés
 - **🔒 Mode Furtif** : Extraction silencieuse en arrière-plan
 - **📊 Rapports Détaillés** : Statistiques complètes et journalisation
+- **🔗 Discord Webhook** : Envoi automatique des résultats et erreurs
+- **📱 Notifications Temps Réel** : Suivi en direct via Discord
+- **🖼️ Échantillons Automatiques** : Images envoyées directement
+- **🛠️ Diagnostic Système** : Analyse complète avec rapport d'erreurs
 
 ---
 
@@ -137,6 +141,141 @@ Ce projet propose une **collection complète et professionnelle** de payloads Ba
 ✅ Aucun PowerShell requis
 ✅ Systèmes anciens supportés
 ✅ Mode de fallback ultime
+```
+
+---
+
+## 🆕 Nouveaux Payloads avec Discord Webhook
+
+### 🔗 `webhook_extract.txt`
+**Extraction + Discord Webhook - Automatisé**
+- ⏱️ **Durée** : 5-15 minutes
+- 🌐 **Webhook** : Envoi automatique sur Discord
+- 📊 **Reporting** : Rapport en temps réel + échantillons d'images
+- 📱 **Notifications** : Progression et erreurs en direct
+
+```ducky
+✅ Envoi automatique sur Discord
+✅ Rapport de progression temps réel
+✅ Échantillons d'images joints
+✅ Gestion complète des erreurs
+✅ Statistiques détaillées
+```
+
+### 🧠 `smart_webhook.txt`
+**Extraction Intelligente + Webhook Discord**
+- ⏱️ **Durée** : 8-20 minutes
+- 🤖 **IA** : Classification + déduplication avancée
+- 🔗 **Discord** : Envoi par catégorie avec émojis
+- 📈 **Analytics** : Rapport d'efficacité détaillé
+
+```ducky
+✅ Classification par catégories (HQ, Screenshots, etc.)
+✅ Déduplication par hash MD5
+✅ Envoi Discord organisé
+✅ Rapport d'efficacité avancé
+✅ Échantillons par catégorie
+```
+
+### 🔍 `error_reporter.txt`
+**Rapporteur d'Erreurs + Diagnostic Système**
+- ⏱️ **Durée** : 2-5 minutes
+- 🏥 **Diagnostic** : Analyse complète du système
+- 📋 **Logs** : Erreurs Windows des 24 dernières heures
+- 🌐 **Webhook** : Rapport système automatique
+
+```ducky
+✅ Diagnostic système complet
+✅ Analyse logs Windows (System + Application)
+✅ Test services critiques
+✅ Vérification réseau
+✅ Rapport Discord automatique
+```
+
+### 🧪 `webhook_test.txt`
+**Test de Connectivité Webhook**
+- ⏱️ **Durée** : 1-2 minutes
+- 🔧 **Validation** : Test complet du webhook Discord
+- 📊 **Diagnostic** : Informations système et réseau
+- 📄 **Rapport** : Test d'envoi fichier + message
+
+```ducky
+✅ Test connectivité Discord
+✅ Test envoi message
+✅ Test envoi fichier
+✅ Diagnostic réseau complet
+✅ Validation webhook complète
+```
+
+---
+
+## 🔗 Configuration Webhook Discord
+
+### 📱 Intégration Discord
+
+Les nouveaux payloads incluent une **intégration Discord webhook** native qui permet :
+
+- **📤 Envoi automatique** des images extraites
+- **📊 Rapports de progression** en temps réel  
+- **⚠️ Notifications d'erreurs** instantanées
+- **📄 Rapports détaillés** en fichier joint
+- **🖼️ Échantillons visuels** des images trouvées
+
+### ⚙️ Configuration du Webhook
+
+#### 1️⃣ Création du Webhook Discord
+1. Sur votre serveur Discord, allez dans **Paramètres du Salon**
+2. Cliquez sur **Intégrations** → **Webhooks**
+3. **Créer un Webhook** et copiez l'URL générale
+4. L'URL doit ressembler à : `https://discord.com/api/webhooks/[ID]/[TOKEN]`
+
+#### 2️⃣ Configuration dans les Payloads
+Les payloads webhook utilisent par défaut l'URL configurée. Pour utiliser votre propre webhook :
+
+1. **Éditez le payload** (par exemple `webhook_extract.txt`)
+2. **Trouvez la ligne** : `$webhookUrl = "https://..."`
+3. **Remplacez l'URL** par votre webhook Discord
+4. **Sauvegardez le fichier**
+
+#### 3️⃣ Test de Connectivité
+```bash
+# Test avec l'outil Python
+python tools/webhook_validator.py --test-webhook
+
+# Test avec payload dédié
+# Utilisez webhook_test.txt sur le Flipper Zero
+```
+
+### 🚨 Sécurité du Webhook
+
+> **⚠️ IMPORTANT** : L'URL du webhook est **sensible** ! 
+> - Ne partagez jamais l'URL complète publiquement
+> - Utilisez un salon Discord privé/dédié
+> - Configurez les permissions appropriées
+> - Surveillez l'utilisation pour éviter les abus
+
+### 📊 Types de Messages Discord
+
+#### Messages de Progression
+```
+🔄 Extraction démarrée sur DESKTOP-ABC123
+⏰ Début: 14:30:15
+📊 Progression: 150 images (25.6 MB)
+```
+
+#### Messages de Résultats
+```
+🎯 Extraction terminée!
+• Images extraites: 247/1205
+• Taille totale: 86.3 MB  
+• Durée: 8min 23s
+• Machine: DESKTOP-ABC123
+```
+
+#### Messages d'Erreurs
+```
+❌ ERREUR: Accès refusé au dossier
+⚠️ 12 erreurs détectées (voir rapport)
 ```
 
 ---
@@ -317,7 +456,7 @@ $advancedLocations = @(
 ## 🔧 Outils Inclus
 
 ### 🏗️ `payload_generator.bat`
-**Générateur de Payloads Personnalisés**
+**Générateur de Payloads Personnalisés (Windows)**
 
 ```batch
 # Utilisation
@@ -339,7 +478,7 @@ payload_generator.bat
 - Templates pré-configurés
 
 ### 🧪 `payload_tester.bat`
-**Testeur et Simulateur**
+**Testeur et Simulateur (Windows)**
 
 ```batch
 # Test d'un payload
@@ -360,6 +499,59 @@ payload_tester.bat quick_extract
 - Recommandations d'optimisation
 - Tests de compatibilité
 
+### 🆕 `webhook_validator.py`
+**Validateur de Payloads avec Webhook (Python)**
+
+```bash
+# Validation d'un payload spécifique
+python webhook_validator.py webhook_extract
+
+# Validation de tous les payloads
+python webhook_validator.py --all
+
+# Test de connectivité webhook
+python webhook_validator.py --test-webhook
+```
+
+**Fonctionnalités avancées:**
+- Analyse complète des payloads (lignes, commandes, durée)
+- Détection automatique des fonctionnalités (PowerShell, webhook, furtif)
+- Score de qualité avec recommandations
+- Test de connectivité Discord webhook
+- Rapport détaillé avec statistiques
+
+### 🛠️ `webhook_generator.py`
+**Générateur de Payloads Webhook (Python)**
+
+```bash
+# Génération interactive d'un payload personnalisé
+python webhook_generator.py
+
+# Interface complète avec:
+- Configuration des emplacements à scanner
+- Choix des types d'images (RAW, PSD, etc.)
+- Filtres avancés (taille, âge)
+- Options de rapport et progression
+- Mode furtif configurable
+```
+
+**Avantages:**
+- Interface intuitive et guidée  
+- Génération de code DuckyScript optimisé
+- Intégration Discord webhook native
+- Templates professionnels
+- Validation automatique des paramètres
+- Estimation de durée précise
+
+### 📊 Comparaison des Outils
+
+| Outil | Plateforme | Interface | Webhook | Complexité |
+|-------|------------|-----------|---------|------------|
+| `payload_generator.bat` | Windows | Batch | ❌ | Simple |
+| `payload_tester.bat` | Windows | Batch | ❌ | Simple |
+| `webhook_validator.py` | Multi-OS | Python | ✅ | Avancée |
+| `webhook_generator.py` | Multi-OS | Python | ✅ | Avancée |
+
 ---
 
 ## 📊 Performances
@@ -373,6 +565,23 @@ payload_tester.bat quick_extract
 | `stealth_extract` | 5-10 min | 10-15 min | 15-25 min |
 | `smart_extract` | 3-8 min | 8-15 min | 15-25 min |
 | `universal_extract` | 2-5 min | 5-10 min | 10-15 min |
+| **`webhook_extract`** | **3-8 min** | **8-15 min** | **15-20 min** |
+| **`smart_webhook`** | **5-12 min** | **12-20 min** | **20-30 min** |
+| **`error_reporter`** | **1-3 min** | **2-5 min** | **5-8 min** |
+| **`webhook_test`** | **30s-1 min** | **1-2 min** | **2-3 min** |
+
+### 🆕 Nouveautés Webhook
+
+#### ⚡ Optimisations Webhook
+- **Rate Limiting** : Délais automatiques entre envois Discord
+- **Compression intelligente** : Images < 8MB envoyées directement
+- **Batch messaging** : Regroupement des rapports de progression
+- **Error handling** : Fallback local si webhook indisponible
+
+#### 📱 Impact Réseau
+- **Bande passante** : +2-5 MB selon nombre d'échantillons envoyés
+- **Latence** : +10-30 secondes selon connexion Discord
+- **Fiabilité** : Fonctionnement même sans réseau (sauvegarde locale)
 
 ### 📈 Facteurs Influençant les Performances
 

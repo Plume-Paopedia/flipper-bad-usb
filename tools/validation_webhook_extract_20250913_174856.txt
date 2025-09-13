@@ -1,0 +1,37 @@
+
+═══════════════════════════════════════════════════════════════
+RAPPORT DE VALIDATION PAYLOAD - WEBHOOK_EXTRACT
+═══════════════════════════════════════════════════════════════
+Généré le: 2025-09-13 17:48:56
+Outil: Webhook Payload Validator v1.0
+
+ANALYSE TECHNIQUE:
+• Lignes de code: 361
+• Taille du fichier: 9627 octets
+• Commandes STRING: 155
+• Instructions DELAY: 17
+• Commandes GUI: 1
+• Actions ENTER: 155
+• Durée estimée: 21.8 secondes
+
+FONCTIONNALITÉS DÉTECTÉES:
+• PowerShell: ✅ OUI
+• Webhook Discord: ✅ OUI
+• Support Discord: ✅ OUI
+• Mode furtif: ❌ NON
+• Gestion d'erreurs: ✅ OUI
+
+ÉVALUATION:
+🟢 EXCELLENT (Score: 100%) - Payload professionnel et complet
+
+RECOMMANDATIONS:
+
+COMPATIBILITÉ:
+• Windows 7/8/10/11 avec PowerShell 2.0+
+• Nécessite ExecutionPolicy Bypass
+
+═══════════════════════════════════════════════════════════════
+
+TEST WEBHOOK DISCORD:
+• Envoi test: ❌ ÉCHEC
+• Erreur: Erreur webhook: HTTPSConnectionPool(host='discordapp.com', port=443): Max retries exceeded with url: /api/webhooks/1416477793264603249/dxrIG93WCYqELVdSEXtQ7aqioc3MglF1m06Kee476so3zrsRllBg (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fd46000b6b0>: Failed to resolve 'discordapp.com' ([Errno -5] No address associated with hostname)"))
