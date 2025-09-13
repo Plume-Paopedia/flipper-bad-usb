@@ -1,0 +1,325 @@
+RAPPORT GLOBAL DE VALIDATION
+Généré le: 2025-09-13 17:49:19
+==================================================
+
+
+═══════════════════════════════════════════════════════════════
+RAPPORT DE VALIDATION PAYLOAD - UNIVERSAL_EXTRACT.TXT
+═══════════════════════════════════════════════════════════════
+Généré le: 2025-09-13 17:49:19
+Outil: Webhook Payload Validator v1.0
+
+ANALYSE TECHNIQUE:
+• Lignes de code: 596
+• Taille du fichier: 15518 octets
+• Commandes STRING: 251
+• Instructions DELAY: 31
+• Commandes GUI: 1
+• Actions ENTER: 251
+• Durée estimée: 37.8 secondes
+
+FONCTIONNALITÉS DÉTECTÉES:
+• PowerShell: ✅ OUI
+• Webhook Discord: ❌ NON
+• Support Discord: ❌ NON
+• Mode furtif: ❌ NON
+• Gestion d'erreurs: ✅ OUI
+
+ÉVALUATION:
+🟡 BIEN (Score: 70%) - Payload fonctionnel avec améliorations possibles
+
+RECOMMANDATIONS:
+• Intégrer l'envoi via webhook Discord
+
+COMPATIBILITÉ:
+• Windows 7/8/10/11 avec PowerShell 2.0+
+• Nécessite ExecutionPolicy Bypass
+
+═══════════════════════════════════════════════════════════════
+
+
+
+═══════════════════════════════════════════════════════════════
+RAPPORT DE VALIDATION PAYLOAD - FULL_EXTRACT.TXT
+═══════════════════════════════════════════════════════════════
+Généré le: 2025-09-13 17:49:19
+Outil: Webhook Payload Validator v1.0
+
+ANALYSE TECHNIQUE:
+• Lignes de code: 434
+• Taille du fichier: 11839 octets
+• Commandes STRING: 181
+• Instructions DELAY: 26
+• Commandes GUI: 1
+• Actions ENTER: 181
+• Durée estimée: 30.9 secondes
+
+FONCTIONNALITÉS DÉTECTÉES:
+• PowerShell: ✅ OUI
+• Webhook Discord: ❌ NON
+• Support Discord: ✅ OUI
+• Mode furtif: ❌ NON
+• Gestion d'erreurs: ✅ OUI
+
+ÉVALUATION:
+🟡 BIEN (Score: 70%) - Payload fonctionnel avec améliorations possibles
+
+RECOMMANDATIONS:
+• Intégrer l'envoi via webhook Discord
+
+COMPATIBILITÉ:
+• Windows 7/8/10/11 avec PowerShell 2.0+
+• Nécessite ExecutionPolicy Bypass
+
+═══════════════════════════════════════════════════════════════
+
+
+
+═══════════════════════════════════════════════════════════════
+RAPPORT DE VALIDATION PAYLOAD - ERROR_REPORTER.TXT
+═══════════════════════════════════════════════════════════════
+Généré le: 2025-09-13 17:49:19
+Outil: Webhook Payload Validator v1.0
+
+ANALYSE TECHNIQUE:
+• Lignes de code: 393
+• Taille du fichier: 10399 octets
+• Commandes STRING: 170
+• Instructions DELAY: 15
+• Commandes GUI: 1
+• Actions ENTER: 170
+• Durée estimée: 21.6 secondes
+
+FONCTIONNALITÉS DÉTECTÉES:
+• PowerShell: ✅ OUI
+• Webhook Discord: ✅ OUI
+• Support Discord: ✅ OUI
+• Mode furtif: ❌ NON
+• Gestion d'erreurs: ✅ OUI
+
+ÉVALUATION:
+🟢 EXCELLENT (Score: 100%) - Payload professionnel et complet
+
+RECOMMANDATIONS:
+
+COMPATIBILITÉ:
+• Windows 7/8/10/11 avec PowerShell 2.0+
+• Nécessite ExecutionPolicy Bypass
+
+═══════════════════════════════════════════════════════════════
+
+
+
+═══════════════════════════════════════════════════════════════
+RAPPORT DE VALIDATION PAYLOAD - SMART_WEBHOOK.TXT
+═══════════════════════════════════════════════════════════════
+Généré le: 2025-09-13 17:49:19
+Outil: Webhook Payload Validator v1.0
+
+ANALYSE TECHNIQUE:
+• Lignes de code: 673
+• Taille du fichier: 17316 octets
+• Commandes STRING: 308
+• Instructions DELAY: 17
+• Commandes GUI: 1
+• Actions ENTER: 308
+• Durée estimée: 37.5 secondes
+
+FONCTIONNALITÉS DÉTECTÉES:
+• PowerShell: ✅ OUI
+• Webhook Discord: ✅ OUI
+• Support Discord: ✅ OUI
+• Mode furtif: ❌ NON
+• Gestion d'erreurs: ✅ OUI
+
+ÉVALUATION:
+🟢 EXCELLENT (Score: 100%) - Payload professionnel et complet
+
+RECOMMANDATIONS:
+
+COMPATIBILITÉ:
+• Windows 7/8/10/11 avec PowerShell 2.0+
+• Nécessite ExecutionPolicy Bypass
+
+═══════════════════════════════════════════════════════════════
+
+
+
+═══════════════════════════════════════════════════════════════
+RAPPORT DE VALIDATION PAYLOAD - WEBHOOK_TEST.TXT
+═══════════════════════════════════════════════════════════════
+Généré le: 2025-09-13 17:49:19
+Outil: Webhook Payload Validator v1.0
+
+ANALYSE TECHNIQUE:
+• Lignes de code: 393
+• Taille du fichier: 10990 octets
+• Commandes STRING: 164
+• Instructions DELAY: 3
+• Commandes GUI: 1
+• Actions ENTER: 164
+• Durée estimée: 17.8 secondes
+
+FONCTIONNALITÉS DÉTECTÉES:
+• PowerShell: ✅ OUI
+• Webhook Discord: ✅ OUI
+• Support Discord: ✅ OUI
+• Mode furtif: ❌ NON
+• Gestion d'erreurs: ✅ OUI
+
+ÉVALUATION:
+🟢 EXCELLENT (Score: 100%) - Payload professionnel et complet
+
+RECOMMANDATIONS:
+
+COMPATIBILITÉ:
+• Windows 7/8/10/11 avec PowerShell 2.0+
+• Nécessite ExecutionPolicy Bypass
+
+═══════════════════════════════════════════════════════════════
+
+
+
+═══════════════════════════════════════════════════════════════
+RAPPORT DE VALIDATION PAYLOAD - SMART_EXTRACT.TXT
+═══════════════════════════════════════════════════════════════
+Généré le: 2025-09-13 17:49:19
+Outil: Webhook Payload Validator v1.0
+
+ANALYSE TECHNIQUE:
+• Lignes de code: 755
+• Taille du fichier: 20945 octets
+• Commandes STRING: 331
+• Instructions DELAY: 38
+• Commandes GUI: 1
+• Actions ENTER: 331
+• Durée estimée: 49.9 secondes
+
+FONCTIONNALITÉS DÉTECTÉES:
+• PowerShell: ✅ OUI
+• Webhook Discord: ❌ NON
+• Support Discord: ✅ OUI
+• Mode furtif: ❌ NON
+• Gestion d'erreurs: ✅ OUI
+
+ÉVALUATION:
+🟡 BIEN (Score: 70%) - Payload fonctionnel avec améliorations possibles
+
+RECOMMANDATIONS:
+• Intégrer l'envoi via webhook Discord
+
+COMPATIBILITÉ:
+• Windows 7/8/10/11 avec PowerShell 2.0+
+• Nécessite ExecutionPolicy Bypass
+
+═══════════════════════════════════════════════════════════════
+
+
+
+═══════════════════════════════════════════════════════════════
+RAPPORT DE VALIDATION PAYLOAD - STEALTH_EXTRACT.TXT
+═══════════════════════════════════════════════════════════════
+Généré le: 2025-09-13 17:49:19
+Outil: Webhook Payload Validator v1.0
+
+ANALYSE TECHNIQUE:
+• Lignes de code: 36
+• Taille du fichier: 3403 octets
+• Commandes STRING: 3
+• Instructions DELAY: 4
+• Commandes GUI: 1
+• Actions ENTER: 3
+• Durée estimée: 2.9 secondes
+
+FONCTIONNALITÉS DÉTECTÉES:
+• PowerShell: ✅ OUI
+• Webhook Discord: ❌ NON
+• Support Discord: ✅ OUI
+• Mode furtif: ✅ OUI
+• Gestion d'erreurs: ✅ OUI
+
+ÉVALUATION:
+🔴 FAIBLE (Score: 35%) - Payload très basique ou incomplet
+
+RECOMMANDATIONS:
+• Intégrer l'envoi via webhook Discord
+• Enrichir le payload avec plus de fonctionnalités
+
+COMPATIBILITÉ:
+• Windows 7/8/10/11 avec PowerShell 2.0+
+• Nécessite ExecutionPolicy Bypass
+
+═══════════════════════════════════════════════════════════════
+
+
+
+═══════════════════════════════════════════════════════════════
+RAPPORT DE VALIDATION PAYLOAD - WEBHOOK_EXTRACT.TXT
+═══════════════════════════════════════════════════════════════
+Généré le: 2025-09-13 17:49:19
+Outil: Webhook Payload Validator v1.0
+
+ANALYSE TECHNIQUE:
+• Lignes de code: 361
+• Taille du fichier: 9627 octets
+• Commandes STRING: 155
+• Instructions DELAY: 17
+• Commandes GUI: 1
+• Actions ENTER: 155
+• Durée estimée: 21.8 secondes
+
+FONCTIONNALITÉS DÉTECTÉES:
+• PowerShell: ✅ OUI
+• Webhook Discord: ✅ OUI
+• Support Discord: ✅ OUI
+• Mode furtif: ❌ NON
+• Gestion d'erreurs: ✅ OUI
+
+ÉVALUATION:
+🟢 EXCELLENT (Score: 100%) - Payload professionnel et complet
+
+RECOMMANDATIONS:
+
+COMPATIBILITÉ:
+• Windows 7/8/10/11 avec PowerShell 2.0+
+• Nécessite ExecutionPolicy Bypass
+
+═══════════════════════════════════════════════════════════════
+
+
+
+═══════════════════════════════════════════════════════════════
+RAPPORT DE VALIDATION PAYLOAD - QUICK_EXTRACT.TXT
+═══════════════════════════════════════════════════════════════
+Généré le: 2025-09-13 17:49:19
+Outil: Webhook Payload Validator v1.0
+
+ANALYSE TECHNIQUE:
+• Lignes de code: 189
+• Taille du fichier: 4972 octets
+• Commandes STRING: 66
+• Instructions DELAY: 18
+• Commandes GUI: 1
+• Actions ENTER: 66
+• Durée estimée: 14.9 secondes
+
+FONCTIONNALITÉS DÉTECTÉES:
+• PowerShell: ✅ OUI
+• Webhook Discord: ❌ NON
+• Support Discord: ❌ NON
+• Mode furtif: ❌ NON
+• Gestion d'erreurs: ✅ OUI
+
+ÉVALUATION:
+🟡 BIEN (Score: 70%) - Payload fonctionnel avec améliorations possibles
+
+RECOMMANDATIONS:
+• Intégrer l'envoi via webhook Discord
+
+COMPATIBILITÉ:
+• Windows 7/8/10/11 avec PowerShell 2.0+
+• Nécessite ExecutionPolicy Bypass
+
+═══════════════════════════════════════════════════════════════
+
+
